@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "64171880266",
+    "project_id": "odza-1af37",
+    "storage_bucket": "odza-1af37.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:64171880266:android:3296ca9e73e4d788049bb3",
+        "android_client_info": {
+          "package_name": "com.odza.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJc7zUufvt-QDzBz8l1sCO6g350-Em-KU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
