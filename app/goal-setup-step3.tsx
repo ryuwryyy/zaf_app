@@ -3,9 +3,10 @@ import { useCallback, useMemo } from 'react';
 import {
     ImageBackground,
     Pressable,
+    ScrollView,
     StyleSheet,
     Text,
-    View
+    View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -30,14 +31,12 @@ function createGoalSetupStep3Styles(spacing: ScaledSpacing, scaleSize: (n: numbe
       marginBottom: scaleSize(48),
     },
     section5: {
-      flex: 1 as const,
       alignSelf: 'stretch' as const,
       justifyContent: 'space-between' as const,
       paddingHorizontal: spacing.lg,
-      marginTop: scaleSize(450),
     },
-    textArea: { minHeight: scaleSize(40), justifyContent: 'center' as const, paddingVertical: scaleSize(12) },
-    textAreaSpacer: { flex: 1 as const, minHeight: spacing.lg },
+    textArea: { minHeight: scaleSize(28), justifyContent: 'center' as const, paddingVertical: scaleSize(4) },
+    textAreaSpacer: { minHeight: spacing.lg },
     title: {
       fontSize: scaleSize(32),
       fontWeight: '800' as const,
@@ -46,12 +45,12 @@ function createGoalSetupStep3Styles(spacing: ScaledSpacing, scaleSize: (n: numbe
     },
     bodyLine: {
       fontSize: scaleSize(20),
-      lineHeight: scaleSize(28),
+      lineHeight: scaleSize(24),
       fontWeight: '600' as const,
       color: STEP3_ORANGE,
       textAlign: 'center' as const,
     },
-    spacer: { flex: 1 as const, minHeight: spacing.lg },
+    spacer: { flex: 1 as const, minHeight: spacing.xl },
     startButton: {
       flexDirection: 'row' as const,
       alignItems: 'center' as const,
@@ -79,8 +78,10 @@ function createGoalSetupStep3Styles(spacing: ScaledSpacing, scaleSize: (n: numbe
  */
 export default function GoalSetupStep3Screen() {
   const insets = useSafeAreaInsets();
-  const { width, spacing, scaleSize } = useResponsive();
+  const { width, height, spacing, scaleSize } = useResponsive();
   const styles = useMemo(() => createGoalSetupStep3Styles(spacing, scaleSize), [spacing, scaleSize]);
+  // Space for circle; reduced so text block stays in same place when we add gap below title (marginBottom 88)
+  const sectionTopMargin = Math.min(scaleSize(310), height * 0.30);
 
   const handleStart = useCallback(async () => {
     const existing = await getAppUsageStartDate();
@@ -98,17 +99,20 @@ export default function GoalSetupStep3Screen() {
         style={StyleSheet.absoluteFill}
         resizeMode="cover"
       />
-      <View
-        style={[
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={[
           styles.content,
           {
-            paddingTop: insets.top + spacing.xl,
-            paddingBottom: insets.bottom + spacing.xl,
+            flexGrow: 1,
+            paddingTop: Math.max(insets.top, scaleSize(28)) + spacing.md,
+            paddingBottom: spacing.lg,
             paddingHorizontal: spacing.lg,
           },
-        ]}>
-        <Text style={styles.stepLabel}>STEP 3</Text>
-        <View style={styles.section5}>
+        ]}
+        showsVerticalScrollIndicator={false}>
+        <Text style={[styles.stepLabel, { marginBottom: scaleSize(88) }]}>STEP 3</Text>
+        <View style={[styles.section5, { marginTop: sectionTopMargin, paddingTop: scaleSize(48) }]}>
           <View style={styles.textArea}>
             <Text style={styles.title}>習慣を見える化して</Text>
           </View>
@@ -132,7 +136,8 @@ export default function GoalSetupStep3Screen() {
           </View>
           <View style={styles.textAreaSpacer} />
         </View>
-        <View style={styles.spacer} />
+      </ScrollView>
+      <View style={{ marginTop: scaleSize(-76), paddingBottom: insets.bottom + spacing.lg, paddingHorizontal: spacing.lg, alignItems: 'center' }}>
         <Pressable
           onPress={handleStart}
           style={({ pressed }) => [

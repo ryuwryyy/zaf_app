@@ -22,7 +22,7 @@ export type OnboardingSlide = {
 export const ONBOARDING_SLIDES: OnboardingSlide[] = [
   {
     id: '1',
-    headline: 'マルチタスクに生きる時代、\n本当の意味でリフレッシュ\nできていますか？',
+    headline: 'マルチタスクに生きる時代、\n本当の意味でリフレッシュできていますか？',
     redLabel: '瞑想',
     bodyBeforeRed: 'ZAFappでは',
     bodyAfterRed: 'を通して、\n自分らしく過ごせるように、\n日々のパフォーマンスを高める\n手助けをします。',
@@ -39,10 +39,10 @@ export const ONBOARDING_SLIDES: OnboardingSlide[] = [
   },
   {
     id: '3',
-    headline: '瞑想を通して',
+    headline: '瞑想を通して\n日々のパフォーマンスの向上を。',
     subhead: '日々のパフォーマンスの向上を。',
     body:
-      '瞑想のある日々は\n「いまここ」を感じやすくなり\nリフレッシュのルーティンをつくることで\n自分本来のコンディションへ導いてくれます。',
+      '瞑想のある日々は\n「いまここ」を感じやすくなり\nリフレッシュのルーティンをつくることで自分本来のコンディションへ導いてくれ\u2060ます。',
     background: PlaceholderImages.image03,
   },
 ];

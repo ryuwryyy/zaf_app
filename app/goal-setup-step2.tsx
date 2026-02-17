@@ -3,6 +3,7 @@ import { useCallback, useMemo } from 'react';
 import {
     ImageBackground,
     Pressable,
+    ScrollView,
     StyleSheet,
     Text,
     View,
@@ -30,28 +31,26 @@ function createGoalSetupStep2Styles(spacing: ScaledSpacing, scaleSize: (n: numbe
       marginBottom: scaleSize(48),
     },
     section5: {
-      flex: 1 as const,
       alignSelf: 'stretch' as const,
       justifyContent: 'space-between' as const,
       paddingHorizontal: spacing.lg,
-      marginTop: scaleSize(450),
     },
-    textArea: { minHeight: scaleSize(40), justifyContent: 'center' as const, paddingVertical: scaleSize(12) },
-    textAreaSpacer: { flex: 1 as const, minHeight: spacing.lg },
+    textArea: { minHeight: scaleSize(28), justifyContent: 'center' as const, paddingVertical: scaleSize(4) },
+    textAreaSpacer: { minHeight: spacing.lg },
     title: {
-      fontSize: scaleSize(32),
+      fontSize: scaleSize(26),
       fontWeight: '800' as const,
       color: STEP2_ORANGE,
       textAlign: 'center' as const,
     },
     bodyLine: {
-      fontSize: scaleSize(20),
-      lineHeight: scaleSize(28),
+      fontSize: scaleSize(18),
+      lineHeight: scaleSize(24),
       fontWeight: '600' as const,
       color: STEP2_ORANGE,
       textAlign: 'center' as const,
     },
-    spacer: { flex: 1 as const, minHeight: spacing.lg },
+    spacer: { flex: 1 as const, minHeight: spacing.xl },
     nextButton: {
       flexDirection: 'row' as const,
       alignItems: 'center' as const,
@@ -78,10 +77,11 @@ function createGoalSetupStep2Styles(spacing: ScaledSpacing, scaleSize: (n: numbe
  */
 export default function GoalSetupStep2Screen() {
   const insets = useSafeAreaInsets();
-  const { width, spacing, scaleSize } = useResponsive();
+  const { width, height, spacing, scaleSize } = useResponsive();
   const styles = useMemo(() => createGoalSetupStep2Styles(spacing, scaleSize), [spacing, scaleSize]);
   const colorScheme = useEffectiveColorScheme();
   const buttonBg = colorScheme === 'dark' ? Colors.dark.surface : '#9E9E9E';
+  const sectionTopMargin = Math.min(scaleSize(350), height * 0.34);
 
   const handleNext = useCallback(() => {
     router.replace('/goal-setup-step3');
@@ -94,17 +94,20 @@ export default function GoalSetupStep2Screen() {
         style={StyleSheet.absoluteFill}
         resizeMode="cover"
       />
-      <View
-        style={[
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={[
           styles.content,
           {
-            paddingTop: insets.top + spacing.xl,
-            paddingBottom: insets.bottom + spacing.xl,
+            flexGrow: 1,
+            paddingTop: Math.max(insets.top, scaleSize(28)) + spacing.xl,
+            paddingBottom: insets.bottom + scaleSize(48),
             paddingHorizontal: spacing.lg,
           },
-        ]}>
+        ]}
+        showsVerticalScrollIndicator={false}>
         <Text style={styles.stepLabel}>STEP 2</Text>
-        <View style={styles.section5}>
+        <View style={[styles.section5, { marginTop: sectionTopMargin, paddingTop: scaleSize(36) }]}>
           <View style={styles.textArea}>
             <Text style={styles.title}>好きな場所で、好きな時間</Text>
           </View>
@@ -144,7 +147,7 @@ export default function GoalSetupStep2Screen() {
             style={styles.nextButtonArrow}
           />
         </Pressable>
-      </View>
+      </ScrollView>
     </View>
   );
 }

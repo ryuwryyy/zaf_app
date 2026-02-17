@@ -29,20 +29,20 @@ function createOnboardingStyles(
     overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.35)' as const },
     copy: { flex: 0 as const, paddingRight: spacing.lg },
     headline: {
-      fontSize: scaleSize(34),
-      fontWeight: '700' as const,
+      fontSize: scaleSize(26),
+      fontWeight: '600' as const,
       color: '#fff' as const,
-      lineHeight: scaleSize(46),
-      letterSpacing: 3,
-      marginBottom: spacing.lg,
+      lineHeight: scaleSize(36),
+      letterSpacing: 2,
+      marginBottom: scaleSize(24),
     },
     section1Slide3: {
-      fontSize: scaleSize(28),
-      lineHeight: scaleSize(38),
+      fontSize: scaleSize(24),
+      lineHeight: scaleSize(34),
       letterSpacing: 2.5,
       fontWeight: '600' as const,
       color: '#fff' as const,
-      marginBottom: scaleSize(43),
+      marginBottom: scaleSize(24),
     },
     redLabel: {
       fontSize: scaleSize(26),
@@ -56,7 +56,7 @@ function createOnboardingStyles(
       fontWeight: '600' as const,
       color: '#fff' as const,
       letterSpacing: 2.5,
-      marginBottom: scaleSize(43),
+      marginBottom: scaleSize(24),
     },
     body: {
       fontSize: scaleSize(20),
@@ -64,10 +64,11 @@ function createOnboardingStyles(
       lineHeight: scaleSize(34),
       letterSpacing: 2,
       opacity: 0.95,
+      marginBottom: scaleSize(32),
     },
-    spacer: { flex: 1 as const, minHeight: scaleSize(80) },
+    spacer: { flex: 1 as const, minHeight: scaleSize(32) },
     footer: { alignItems: 'center' as const },
-    pagination: { flexDirection: 'row' as const, gap: scaleSize(12), marginBottom: spacing.xl },
+    pagination: { flexDirection: 'row' as const, gap: scaleSize(12), marginBottom: scaleSize(24) },
     dot: {
       width: scaleSize(9),
       height: scaleSize(9),
@@ -158,8 +159,6 @@ export default function OnboardingScreen() {
               <>
                 <Text style={styles.section1Slide3}>
                   {item.headline}
-                  {'\n'}
-                  {item.subhead}
                 </Text>
                 {item.body ? (
                   <Text style={styles.body}>{item.body}</Text>

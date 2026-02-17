@@ -76,7 +76,8 @@ function createSettingsStyles(
     goalUnit: { fontSize: typography.subhead.fontSize, fontWeight: '600' as const },
     goalButtonsRow: { flexDirection: 'row' as const, justifyContent: 'center' as const, alignItems: 'center' as const, gap: spacing.sm, marginBottom: spacing.xl },
     goalActionButton: { flex: 1 as const, paddingVertical: spacing.sm, paddingHorizontal: spacing.xs, borderRadius: borderRadius.md, borderWidth: 1, alignItems: 'center' as const, justifyContent: 'center' as const },
-    goalActionText: { fontSize: typography.label.fontSize, fontWeight: '600' as const },
+    goalActionButtonWide: { minWidth: scaleSize(80) },
+    goalActionText: { fontSize: typography.body.fontSize, fontWeight: '600' as const },
     reminderHeader: { flexDirection: 'row' as const, alignItems: 'center' as const, justifyContent: 'space-between' as const, marginBottom: spacing.sm },
     reminderRow: { flexDirection: 'row' as const, alignItems: 'center' as const, justifyContent: 'space-between' as const, paddingVertical: spacing.md, paddingHorizontal: spacing.lg, borderRadius: borderRadius.md, borderWidth: 1, marginBottom: spacing.sm },
     reminderRowRight: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: spacing.md },
@@ -469,27 +470,27 @@ export default function SettingsScreen() {
           <Pressable
             style={({ pressed }) => [styles.goalActionButton, { backgroundColor: surfaceColor, borderColor }, pressed && { opacity: 0.85 }]}
             onPress={() => loaded && handleGoalChange(Math.min(goalDays + 5, 365))}>
-            <Text style={[styles.goalActionText, { color: textColor }]}>+5</Text>
+            <Text style={[styles.goalActionText, { color: textColor }]} numberOfLines={1} adjustsFontSizeToFit>{'+5'}</Text>
           </Pressable>
           <Pressable
             style={({ pressed }) => [styles.goalActionButton, { backgroundColor: surfaceColor, borderColor }, pressed && { opacity: 0.85 }]}
             onPress={() => loaded && handleGoalChange(Math.min(goalDays + 1, 365))}>
-            <Text style={[styles.goalActionText, { color: textColor }]}>+1</Text>
+            <Text style={[styles.goalActionText, { color: textColor }]} numberOfLines={1} adjustsFontSizeToFit>{'+1'}</Text>
           </Pressable>
           <Pressable
-            style={({ pressed }) => [styles.goalActionButton, { backgroundColor: surfaceColor, borderColor }, pressed && { opacity: 0.85 }]}
+            style={({ pressed }) => [styles.goalActionButton, styles.goalActionButtonWide, { backgroundColor: surfaceColor, borderColor }, pressed && { opacity: 0.85 }]}
             onPress={() => loaded && handleGoalChange(0)}>
-            <Text style={[styles.goalActionText, { color: textColor }]}>0にリセット</Text>
+            <Text style={[styles.goalActionText, { color: textColor }]} numberOfLines={1} adjustsFontSizeToFit>{'0にリセット'}</Text>
           </Pressable>
           <Pressable
             style={({ pressed }) => [styles.goalActionButton, { backgroundColor: surfaceColor, borderColor }, pressed && { opacity: 0.85 }]}
             onPress={() => loaded && handleGoalChange(Math.max(0, goalDays - 1))}>
-            <Text style={[styles.goalActionText, { color: textColor }]}>-1</Text>
+            <Text style={[styles.goalActionText, { color: textColor }]} numberOfLines={1} adjustsFontSizeToFit>{'-1'}</Text>
           </Pressable>
           <Pressable
             style={({ pressed }) => [styles.goalActionButton, { backgroundColor: surfaceColor, borderColor }, pressed && { opacity: 0.85 }]}
             onPress={() => loaded && handleGoalChange(Math.max(0, goalDays - 5))}>
-            <Text style={[styles.goalActionText, { color: textColor }]}>-5</Text>
+            <Text style={[styles.goalActionText, { color: textColor }]} numberOfLines={1} adjustsFontSizeToFit>{'-5'}</Text>
           </Pressable>
         </View>
 
@@ -523,22 +524,22 @@ export default function SettingsScreen() {
           <Pressable
             style={({ pressed }) => [styles.goalActionButton, { backgroundColor: surfaceColor, borderColor }, pressed && { opacity: 0.85 }]}
             onPress={() => loaded && handleDailyTargetChange(Math.min(1440, dailyTargetMinutes + 5))}>
-            <Text style={[styles.goalActionText, { color: textColor }]}>+5</Text>
+            <Text style={[styles.goalActionText, { color: textColor }]} numberOfLines={1} adjustsFontSizeToFit>{'+5'}</Text>
           </Pressable>
           <Pressable
             style={({ pressed }) => [styles.goalActionButton, { backgroundColor: surfaceColor, borderColor }, pressed && { opacity: 0.85 }]}
             onPress={() => loaded && handleDailyTargetChange(Math.min(1440, dailyTargetMinutes + 1))}>
-            <Text style={[styles.goalActionText, { color: textColor }]}>+1</Text>
+            <Text style={[styles.goalActionText, { color: textColor }]} numberOfLines={1} adjustsFontSizeToFit>{'+1'}</Text>
           </Pressable>
           <Pressable
             style={({ pressed }) => [styles.goalActionButton, { backgroundColor: surfaceColor, borderColor }, pressed && { opacity: 0.85 }]}
             onPress={() => loaded && handleDailyTargetChange(Math.max(1, dailyTargetMinutes - 1))}>
-            <Text style={[styles.goalActionText, { color: textColor }]}>-1</Text>
+            <Text style={[styles.goalActionText, { color: textColor }]} numberOfLines={1} adjustsFontSizeToFit>{'-1'}</Text>
           </Pressable>
           <Pressable
             style={({ pressed }) => [styles.goalActionButton, { backgroundColor: surfaceColor, borderColor }, pressed && { opacity: 0.85 }]}
             onPress={() => loaded && handleDailyTargetChange(Math.max(1, dailyTargetMinutes - 5))}>
-            <Text style={[styles.goalActionText, { color: textColor }]}>-5</Text>
+            <Text style={[styles.goalActionText, { color: textColor }]} numberOfLines={1} adjustsFontSizeToFit>{'-5'}</Text>
           </Pressable>
         </View>
 

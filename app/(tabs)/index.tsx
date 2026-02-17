@@ -3,11 +3,12 @@ import { Colors } from '@/constants/theme';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import {
-    Image,
-    Pressable,
-    ScrollView,
-    Text,
-    View,
+  Image,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
@@ -18,11 +19,11 @@ import { useEffectiveColorScheme } from '@/contexts/ThemePreferenceContext';
 import { useResponsive } from '@/hooks/use-responsive';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import {
-    getDailyMeditationTargetMinutes,
-    getGoalDays,
-    getMinutesForDate,
-    getProgressDaysCount,
-    getSessions,
+  getDailyMeditationTargetMinutes,
+  getGoalDays,
+  getMinutesForDate,
+  getProgressDaysCount,
+  getSessions,
 } from '@/lib/storage';
 
 const DEFAULT_PROGRESS_TOTAL = 20;
@@ -32,6 +33,24 @@ const PREVIEW_DAYS = 88;
 const PREVIEW_TOTAL = 175;
 /** Full circle (no gap) for progress ring */
 const ARC_TOTAL_DEG = 360;
+
+/**
+ * Padding configuration for client review.
+ * 
+ * To test different padding variations, change the values below:
+ * - For iOS: Set CONTENT_WIDTH_PERCENT_IOS to 0.95 (5%), 0.93 (7%), or 0.90 (10%)
+ * - For Android: Set CONTENT_WIDTH_PERCENT_ANDROID to 0.95 (5%), 0.93 (7%), or 0.90 (10%)
+ * 
+ * Variations requested:
+ * 1. iOS 5% (95% width) = 0.95
+ * 2. iOS 7% (93% width) = 0.93
+ * 3. iOS 10% (90% width) = 0.90
+ * 4. Android 5% (95% width) = 0.95
+ * 5. Android 7% (93% width) = 0.93
+ * 6. Android 10% (90% width) = 0.90
+ */
+const CONTENT_WIDTH_PERCENT_IOS = 0.95; // 95% width = 5% padding on each side
+const CONTENT_WIDTH_PERCENT_ANDROID = 0.95; // 95% width = 5% padding on each side
 
 function createHomeStyles(
   spacing: ScaledSpacing,
@@ -48,11 +67,11 @@ function createHomeStyles(
     profileButtonPressed: { opacity: 0.7 },
     scroll: { flex: 1 as const },
     scrollContent: { paddingTop: spacing.sm },
-    section: { marginTop: spacing.lg },
+    section: { marginTop: spacing.xl },
     progressCircleOuter: { alignSelf: 'center' as const, alignItems: 'center' as const, justifyContent: 'center' as const },
     progressCircleRing: { position: 'absolute' as const },
     progressSvg: { position: 'absolute' as const },
-    progressCircleContent: { flex: 1 as const, alignItems: 'center' as const, justifyContent: 'center' as const, paddingHorizontal: spacing.lg },
+    progressCircleContent: { flex: 1 as const, alignItems: 'center' as const, justifyContent: 'center' as const, paddingHorizontal: spacing.xl, paddingVertical: scaleSize(20) },
     progressCircleInner: { alignItems: 'center' as const, justifyContent: 'center' as const },
     progressLabel: { fontSize: typography.subhead.fontSize, fontWeight: '700' as const, letterSpacing: 0.3, lineHeight: scaleSize(24), marginBottom: scaleSize(4) },
     progressLine: { width: scaleSize(40), height: 1, marginBottom: scaleSize(8) },
@@ -60,22 +79,22 @@ function createHomeStyles(
     progressValueNumber: { fontSize: scaleSize(28), fontWeight: '800' as const },
     progressSubtext: { fontSize: typography.body.fontSize, lineHeight: scaleSize(24), letterSpacing: 0.2, fontWeight: '500' as const, marginTop: spacing.md, textAlign: 'center' as const, paddingHorizontal: spacing.sm },
     todayMeditation: { fontSize: typography.label.fontSize, fontWeight: '600' as const, marginTop: spacing.sm, textAlign: 'center' as const },
-    detailButton: { alignSelf: 'center' as const, marginTop: spacing.md, paddingVertical: scaleSize(12), paddingHorizontal: spacing.xl, borderRadius: borderRadius.md, borderWidth: 1 },
+    detailButton: { alignSelf: 'center' as const, marginTop: spacing.lg, paddingVertical: scaleSize(12), paddingHorizontal: spacing.xl, borderRadius: borderRadius.md, borderWidth: 1 },
     detailButtonPressed: { opacity: 0.85 },
     detailButtonText: { fontSize: typography.body.fontSize, fontWeight: '700' as const, letterSpacing: 0.3, lineHeight: scaleSize(20) },
     divider: { height: 1, marginTop: 0, marginBottom: spacing.sm },
     dividerAfterProgress: { marginTop: spacing.xl },
     sectionTitle: { fontSize: typography.title.fontSize, fontWeight: '700' as const, letterSpacing: 0.4, lineHeight: typography.title.lineHeight, marginBottom: spacing.md },
-    menuSectionTitle: { marginBottom: spacing.xs },
-    menuRow: { flexDirection: 'row' as const, alignItems: 'flex-end' as const, gap: spacing.lg, height: scaleSize(100), overflow: 'visible' as const },
+    menuSectionTitle: { marginBottom: spacing.sm },
+    menuRow: { flexDirection: 'row' as const, alignItems: 'flex-end' as const, gap: spacing.lg, height: scaleSize(80), overflow: 'visible' as const },
     menuText: { flex: 1 as const, paddingBottom: scaleSize(2) },
     menuTitle: { fontSize: typography.subhead.fontSize, fontWeight: '700' as const, letterSpacing: 0.3, lineHeight: scaleSize(24), marginBottom: scaleSize(4) },
     menuDuration: { fontSize: typography.body.fontSize, fontWeight: '500' as const, letterSpacing: 0.2, lineHeight: scaleSize(20) },
-    menuThumbWrap: { width: scaleSize(156), height: scaleSize(120), borderRadius: scaleSize(10), alignSelf: 'flex-end' as const, overflow: 'hidden' as const },
+    menuThumbWrap: { width: scaleSize(120), height: scaleSize(92), borderRadius: scaleSize(10), alignSelf: 'flex-end' as const, overflow: 'hidden' as const },
     menuThumb: { width: '100%' as const, height: '100%' as const, borderRadius: scaleSize(10) },
     menuPlayOverlay: { position: 'absolute' as const, left: 0, right: 0, top: 0, bottom: 0, alignItems: 'center' as const, justifyContent: 'center' as const, borderRadius: scaleSize(10) },
     menuPlayCircle: { width: scaleSize(48), height: scaleSize(48), borderRadius: scaleSize(24), backgroundColor: 'rgba(0, 0, 0, 0.65)', alignItems: 'center' as const, justifyContent: 'center' as const },
-    quoteText: { fontSize: typography.body.fontSize, lineHeight: scaleSize(26), letterSpacing: 0.3, fontWeight: '500' as const, textAlign: 'left' as const },
+    quoteText: { fontSize: typography.body.fontSize, lineHeight: scaleSize(26), letterSpacing: 0.3, fontWeight: '500' as const, textAlign: 'left' as const, marginTop: spacing.xs },
   };
 }
 
@@ -84,10 +103,13 @@ function createHomeStyles(
  * Header: HOME + profile icon.
  * Content: Goal achievement (from storage: goal days + session history), Today's menu, Today's quote.
  */
+/** Tab bar height (must match app/(tabs)/_layout.tsx) */
+const TAB_BAR_HEIGHT = 100;
+
 export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { width, spacing, typography, scaleSize, borderRadius } = useResponsive();
+  const { width, height, spacing, typography, scaleSize, borderRadius } = useResponsive();
   const styles = useMemo(
     () => createHomeStyles(spacing, typography, scaleSize, borderRadius),
     [spacing, typography, scaleSize, borderRadius]
@@ -103,6 +125,11 @@ export default function HomeScreen() {
   const progressRingCompleted = useThemeColor({}, 'progressRingCompleted');
   /** 詳しく見る: surface in dark (avoids bright white block), white in light */
   const detailButtonBg = colorScheme === 'dark' ? colors.surface : colors.white;
+
+  // Calculate horizontal padding based on content width percentage
+  const contentWidthPercent = Platform.OS === 'ios' ? CONTENT_WIDTH_PERCENT_IOS : CONTENT_WIDTH_PERCENT_ANDROID;
+  const contentWidth = width * contentWidthPercent;
+  const horizontalPadding = (width - contentWidth) / 2;
 
   const [progressDays, setProgressDays] = useState(0);
   const [progressTotal, setProgressTotal] = useState(DEFAULT_PROGRESS_TOTAL);
@@ -139,9 +166,10 @@ export default function HomeScreen() {
   const progressPercent = displayTotal > 0 ? displayDays / displayTotal : 0;
   const COMPLETED_ARC_DEG = Math.min(ARC_TOTAL_DEG, ARC_TOTAL_DEG * progressPercent);
   const REMAINING_ARC_DEG = ARC_TOTAL_DEG - COMPLETED_ARC_DEG;
-  /** Section height reduced by 17%: progress circle and header spacing scaled by 0.83 */
-  const HEIGHT_SCALE = 0.83;
-  const progressSize = (width - spacing.lg * 2) * HEIGHT_SCALE;
+  // Progress circle: large enough so label, value, subtext, today's time, and button fit without overlap
+  const HEIGHT_SCALE = 1.0;
+  const progressSizeByWidth = contentWidth * HEIGHT_SCALE;
+  const progressSize = Math.min(progressSizeByWidth, scaleSize(380));
   const progressStrokeThick = Math.round(progressSize * 0.1);
   const progressRadius = (progressSize - progressStrokeThick) / 2;
   const circumference = 2 * Math.PI * progressRadius;
@@ -158,7 +186,7 @@ export default function HomeScreen() {
           styles.header,
           {
             paddingTop: insets.top + spacing.xl,
-            paddingHorizontal: spacing.lg,
+            paddingHorizontal: horizontalPadding,
             paddingBottom: spacing.md,
           },
         ]}>
@@ -176,13 +204,14 @@ export default function HomeScreen() {
         contentContainerStyle={[
           styles.scrollContent,
           {
-            paddingBottom: insets.bottom + scaleSize(120),
-            paddingHorizontal: spacing.lg,
+            paddingTop: spacing.md,
+            paddingBottom: insets.bottom + scaleSize(TAB_BAR_HEIGHT) + spacing.xl,
+            paddingHorizontal: horizontalPadding,
           },
         ]}
         showsVerticalScrollIndicator={false}>
-        {/* Progress section: full circle ring, height reduced by 17% */}
-        <View style={[styles.section, { marginTop: spacing.lg * HEIGHT_SCALE }]}>
+        {/* Progress section */}
+        <View style={[styles.section, { marginTop: spacing.lg }]}>
           <View style={[styles.progressCircleOuter, { width: progressSize, height: progressSize }]}>
             {/* Full circle ring (SVG) */}
             <View
@@ -220,7 +249,7 @@ export default function HomeScreen() {
                 />
               </Svg>
             </View>
-            <View style={[styles.progressCircleContent, { paddingHorizontal: spacing.lg }]}>
+            <View style={styles.progressCircleContent}>
               <View style={styles.progressCircleInner}>
                 <Text style={[styles.progressLabel, { color: textMuted }]}>目標達成率</Text>
                 <View style={[styles.progressLine, { backgroundColor: borderColor }]} />
@@ -250,10 +279,10 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        <View style={[styles.divider, styles.dividerAfterProgress, { backgroundColor: borderColor, marginTop: spacing.xl, marginBottom: spacing.sm }]} />
+        <View style={[styles.divider, styles.dividerAfterProgress, { backgroundColor: borderColor, marginTop: spacing.xl, marginBottom: spacing.md }]} />
 
-        {/* Section 1: Today's menu (no gap between title and content) */}
-        <View style={[styles.section, { marginTop: spacing.lg }]}>
+        {/* Today's menu */}
+        <View style={[styles.section, { marginTop: spacing.xl }]}>
           <Text style={[styles.sectionTitle, styles.menuSectionTitle, { color: textColor }]}>今日のメニュー</Text>
           <View style={styles.menuRow}>
             <View style={styles.menuText}>
@@ -279,10 +308,10 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        <View style={[styles.divider, { backgroundColor: borderColor, marginBottom: spacing.sm }]} />
+        <View style={[styles.divider, { backgroundColor: borderColor, marginTop: spacing.lg, marginBottom: spacing.md }]} />
 
         {/* Today's quote */}
-        <View style={[styles.section, { marginTop: spacing.lg }]}>
+        <View style={[styles.section, { marginTop: spacing.xl, marginBottom: spacing.xxl }]}>
           <Text style={[styles.sectionTitle, { color: textColor }]}>今日の名言</Text>
           <Text style={[styles.quoteText, { color: textMuted }]}>
             今あるものに満たされない者は{'\n'}

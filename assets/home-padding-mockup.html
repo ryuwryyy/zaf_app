@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Home – iOS padding mockup (95% / 93% / 90%)</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1c1c1e;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 0;
+    }
+    .phone {
+      width: 390px;
+      max-width: 100%;
+      background: #000;
+      border-radius: 44px;
+      padding: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .screen {
+      background: #1c1c1e;
+      border-radius: 34px;
+      overflow: hidden;
+      min-height: 844px;
+      position: relative;
+    }
+    .notch {
+      height: 47px;
+      background: #000;
+      border-radius: 0 0 20px 20px;
+      margin: 0 108px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .content-wrap {
+      transition: padding 0.2s ease;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 0 12px;
+    }
+    .header-title {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+    .profile-circle {
+      width: 44px;
+      height: 44px;
+      border-radius: 22px;
+      background: #2c2c2e;
+      border: 1px solid #3a3a3c;
+    }
+    .progress-outer {
+      margin: 24px auto;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .progress-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 14px solid #3a3a3c;
+    }
+    .progress-ring-fill {
+      position: absolute;
+      border-radius: 50%;
+      border: 14px solid #b8956e;
+      clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, 50% 0%);
+      transform: rotate(-90deg);
+    }
+    .progress-inner {
+      text-align: center;
+      padding: 24px 20px;
+      position: relative;
+      z-index: 1;
+    }
+    .progress-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: #8e8e93;
+      margin-bottom: 4px;
+    }
+    .progress-line {
+      width: 40px;
+      height: 1px;
+      background: #3a3a3c;
+      margin: 0 auto 8px;
+    }
+    .progress-value {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .progress-value-number { font-size: 28px; font-weight: 800; }
+    .progress-subtext {
+      font-size: 16px;
+      line-height: 24px;
+      color: #8e8e93;
+      margin-top: 12px;
+      white-space: pre-line;
+    }
+    .today-meditation {
+      font-size: 13px;
+      font-weight: 600;
+      color: #8e8e93;
+      margin-top: 8px;
+    }
+    .detail-btn {
+      margin-top: 16px;
+      padding: 12px 24px;
+      border-radius: 10px;
+      border: 1px solid #3a3a3c;
+      background: #2c2c2e;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .divider {
+      height: 1px;
+      background: #3a3a3c;
+      margin: 24px 0 12px;
+    }
+    .section-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .menu-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 16px;
+    }
+    .menu-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+    .menu-duration { font-size: 16px; color: #8e8e93; }
+    .controls {
+      margin-top: 24px;
+      padding: 16px;
+      background: #2c2c2e;
+      border-radius: 12px;
+      width: 390px;
+      max-width: 100%;
+    }
+    .controls label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #8e8e93;
+    }
+    .controls select {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      background: #1c1c1e;
+      color: #fff;
+      border: 1px solid #3a3a3c;
+    }
+    .controls p {
+      margin-top: 12px;
+      font-size: 13px;
+      color: #8e8e93;
+    }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <label for="width">Content width (iOS padding mockup)</label>
+    <select id="width">
+      <option value="0.95">95% width (5% padding) – iOS</option>
+      <option value="0.93">93% width (7% padding) – iOS</option>
+      <option value="0.90">90% width (10% padding) – iOS</option>
+    </select>
+    <p>Select a value, then take a screenshot of the phone frame below (e.g. crop to the phone or use browser DevTools device toolbar with iPhone 15 Pro).</p>
+  </div>
+
+  <div class="phone" style="margin-top: 16px;">
+    <div class="screen">
+      <div class="notch">12:45</div>
+      <div class="content-wrap" id="contentWrap">
+        <div class="header">
+          <span class="header-title">HOME</span>
+          <div class="profile-circle"></div>
+        </div>
+        <div class="progress-outer" id="progressOuter">
+          <div class="progress-ring" id="progressRing"></div>
+          <div class="progress-ring-fill" id="progressRingFill"></div>
+          <div class="progress-inner">
+            <div class="progress-label">目標達成率</div>
+            <div class="progress-line"></div>
+            <div class="progress-value">
+              <span class="progress-value-number">0</span>日目/<span class="progress-value-number">20</span>日
+            </div>
+            <div class="progress-subtext">You have practiced zazen for this long
+in a row up until now.
+That's amazing.</div>
+            <div class="today-meditation">今日の瞑想時間: 0分/10分</div>
+            <button class="detail-btn" type="button">詳しく見る</button>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="section-title">今日のメニュー</div>
+        <div class="menu-row">
+          <div>
+            <div class="menu-title">【ビギナー向け】 座禅のいろは</div>
+            <div class="menu-duration">12分</div>
+          </div>
+        </div>
+      </div>
+      <div style="height: 80px; background: #1c1c1e;"></div>
+    </div>
+  </div>
+
+  <script>
+    const screenWidth = 390;
+    const select = document.getElementById('width');
+    const contentWrap = document.getElementById('contentWrap');
+    const progressOuter = document.getElementById('progressOuter');
+    const progressRing = document.getElementById('progressRing');
+    const progressRingFill = document.getElementById('progressRingFill');
+
+    function updateLayout() {
+      const percent = parseFloat(select.value);
+      const contentWidth = screenWidth * percent;
+      const padding = (screenWidth - contentWidth) / 2;
+      contentWrap.style.paddingLeft = padding + 'px';
+      contentWrap.style.paddingRight = padding + 'px';
+      const size = Math.min(contentWidth, 380);
+      progressOuter.style.width = size + 'px';
+      progressOuter.style.height = size + 'px';
+      progressRing.style.width = size + 'px';
+      progressRing.style.height = size + 'px';
+      progressRing.style.borderWidth = Math.round(size * 0.1) + 'px';
+      progressRingFill.style.width = size + 'px';
+      progressRingFill.style.height = size + 'px';
+      progressRingFill.style.borderWidth = Math.round(size * 0.1) + 'px';
+    }
+    select.addEventListener('change', updateLayout);
+    updateLayout();
+  </script>
+</body>
+</html>
