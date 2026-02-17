@@ -38,19 +38,19 @@ const ARC_TOTAL_DEG = 360;
  * Padding configuration for client review.
  * 
  * To test different padding variations, change the values below:
- * - For iOS: Set CONTENT_WIDTH_PERCENT_IOS to 0.95 (5%), 0.93 (7%), or 0.90 (10%)
- * - For Android: Set CONTENT_WIDTH_PERCENT_ANDROID to 0.95 (5%), 0.93 (7%), or 0.90 (10%)
+ * - For iOS: Set CONTENT_WIDTH_PERCENT_IOS to 0.90 (10%), 0.86 (14%), or 0.84 (16%)
+ * - For Android: Set CONTENT_WIDTH_PERCENT_ANDROID to 0.90 (10%), 0.86 (14%), or 0.84 (16%)
  * 
  * Variations requested:
- * 1. iOS 5% (95% width) = 0.95
- * 2. iOS 7% (93% width) = 0.93
- * 3. iOS 10% (90% width) = 0.90
- * 4. Android 5% (95% width) = 0.95
- * 5. Android 7% (93% width) = 0.93
- * 6. Android 10% (90% width) = 0.90
+ * 1. iOS 10% padding (90% width) = 0.90
+ * 2. iOS 14% padding (86% width) = 0.86
+ * 3. iOS 16% padding (84% width) = 0.84
+ * 4. Android 10% padding (90% width) = 0.90
+ * 5. Android 14% padding (86% width) = 0.86
+ * 6. Android 16% padding (84% width) = 0.84
  */
-const CONTENT_WIDTH_PERCENT_IOS = 0.95; // 95% width = 5% padding on each side
-const CONTENT_WIDTH_PERCENT_ANDROID = 0.95; // 95% width = 5% padding on each side
+const CONTENT_WIDTH_PERCENT_IOS = 0.86; // 90% width = 10% padding on each side
+const CONTENT_WIDTH_PERCENT_ANDROID = 0.86; // 90% width = 10% padding on each side
 
 function createHomeStyles(
   spacing: ScaledSpacing,
