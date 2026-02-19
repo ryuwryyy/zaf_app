@@ -245,7 +245,7 @@ function ReminderTimeWheel({
           })}
         </ScrollView>
       </View>
-      <Text style={[styles.reminderWheelUnit, { color: textMuted }]}>{unit}</Text>
+      <Text style={[screenStyles.reminderWheelUnit, { color: textMuted }]}>{unit}</Text>
     </View>
   );
 }
