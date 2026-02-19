@@ -49,8 +49,8 @@ const ARC_TOTAL_DEG = 360;
  * 5. Android 14% padding (86% width) = 0.86
  * 6. Android 16% padding (84% width) = 0.84
  */
-const CONTENT_WIDTH_PERCENT_IOS = 0.86; // 90% width = 10% padding on each side
-const CONTENT_WIDTH_PERCENT_ANDROID = 0.86; // 90% width = 10% padding on each side
+const CONTENT_WIDTH_PERCENT_IOS = 0.84; // 84% width (client confirmed)
+const CONTENT_WIDTH_PERCENT_ANDROID = 0.84; // 84% width (client confirmed)
 
 function createHomeStyles(
   spacing: ScaledSpacing,
