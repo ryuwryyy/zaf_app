@@ -78,6 +78,7 @@ function createHomeStyles(
     progressValue: { fontSize: typography.body.fontSize, fontWeight: '600' as const, letterSpacing: 0.5, lineHeight: typography.body.lineHeight },
     progressValueNumber: { fontSize: scaleSize(28), fontWeight: '800' as const },
     progressSubtext: { fontSize: typography.body.fontSize, lineHeight: scaleSize(24), letterSpacing: 0.2, fontWeight: '500' as const, marginTop: spacing.md, textAlign: 'center' as const, paddingHorizontal: spacing.sm },
+    progressEncouragement: { fontSize: typography.body.fontSize + 2, lineHeight: scaleSize(27), letterSpacing: 0.2, fontWeight: '500' as const, textAlign: 'center' as const, paddingHorizontal: spacing.md, marginTop: spacing.sm, maxWidth: '100%' as const },
     todayMeditation: { fontSize: typography.label.fontSize, fontWeight: '600' as const, marginTop: spacing.sm, textAlign: 'center' as const },
     detailButton: { alignSelf: 'center' as const, marginTop: spacing.lg, paddingVertical: scaleSize(12), paddingHorizontal: spacing.xl, borderRadius: borderRadius.md, borderWidth: 1 },
     detailButtonPressed: { opacity: 0.85 },
@@ -261,10 +262,11 @@ export default function HomeScreen() {
                   <Text style={styles.progressValueNumber}>{displayTotal}</Text>日
                 </Text>
               </View>
-              <Text style={[styles.progressSubtext, { color: textMuted }]}>
-                You have practiced zazen for this long{'\n'}
-                in a row up until now.{'\n'}
-                That's amazing.
+              <Text
+                style={[styles.progressEncouragement, { color: textMuted }]}
+                numberOfLines={3}>
+                You've made it this far with your meditation practice.{'\n'}
+                Incredible work.
               </Text>
               <Text style={[styles.todayMeditation, { color: textMuted }]}>
                 今日の瞑想時間: {todayMinutes}分 / {dailyTargetMinutes}分

@@ -1,106 +1,108 @@
-# Odza – Meditation App
+# Odza – 瞑想アプリ
 
-A React Native (Expo) meditation app with goals, sessions, reminders, and push notifications. This document explains how to run the project, build for Android and iOS, how push notifications work, and how the business logic is implemented.
+目標・セッション・リマインダー・プッシュ通知を備えた React Native（Expo）の瞑想アプリです。このドキュメントでは、プロジェクトの起動方法、Android / iOS のビルド、プッシュ通知の仕組み、ビジネスロジックの実装について説明します。
 
----
-
-## Table of Contents
-
-1. [How to Run This Project](#1-how-to-run-this-project)
-2. [How to Build Android](#2-how-to-build-android)
-3. [How to Build iOS](#3-how-to-build-ios)
-4. [Push Notifications (Android and iOS)](#4-push-notifications-android-and-ios)
-5. [Business Logic (Step by Step)](#5-business-logic-step-by-step)
+**非エンジニアの方:** ZAF商品・名言・通知の更新や運用（コード不要）については、**[docs/operation-manual-ja.md](docs/operation-manual-ja.md)**（運用マニュアル）を参照してください。
 
 ---
 
-## 1. How to Run This Project
+## 目次
 
-### Prerequisites
+1. [プロジェクトの起動方法](#1-プロジェクトの起動方法)
+2. [Android のビルド](#2-android-のビルド)
+3. [iOS のビルド](#3-ios-のビルド)
+4. [プッシュ通知（Android / iOS）](#4-プッシュ通知android--ios)
+5. [ビジネスロジック（ステップ別）](#5-ビジネスロジックステップ別)
 
-- **Node.js** (LTS, e.g. 18 or 20)
-- **npm** or **yarn**
-- **Expo Go** app on your phone (optional, for quick testing)
-- **EAS CLI** (optional, only needed for building): `npm install -g eas-cli`
+---
 
-### Step 1: Install dependencies
+## 1. プロジェクトの起動方法
 
-From the project root (clone the repo first if needed):
+### 必要な環境
+
+- **Node.js**（LTS、18 または 20 推奨）
+- **npm** または **yarn**
+- **Expo Go** アプリ（任意・実機での簡易テスト用）
+- **EAS CLI**（任意・ビルド時のみ）: `npm install -g eas-cli`
+
+### ステップ 1: 依存関係のインストール
+
+プロジェクトのルートで（必要に応じてリポジトリをクローンしてから）:
 
 ```bash
-cd <path-to-odza-project>
+cd <odzaプロジェクトのパス>
 npm install
 ```
 
-### Step 2: Start the development server
+### ステップ 2: 開発サーバーの起動
 
 ```bash
 npm start
 ```
 
-This runs `expo start` and opens the Metro bundler in the terminal.
+`expo start` が実行され、ターミナルに Metro バンドラが表示されます。
 
-### Step 3: Run on a device or simulator
+### ステップ 3: 実機またはシミュレータで実行
 
-- **Android:** Press `a` in the terminal, or run `npm run android` (opens Expo on Android emulator/device).
-- **iOS:** Press `i` in the terminal, or run `npm run ios` (opens on iOS simulator; Mac only).
-- **Web:** Press `w` in the terminal, or run `npm run web`.
+- **Android:** ターミナルで `a` を押すか、`npm run android` を実行（Android エミュレータ／実機で Expo が開きます）。
+- **iOS:** ターミナルで `i` を押すか、`npm run ios` を実行（iOS シミュレータで起動・Mac のみ）。
+- **Web:** ターミナルで `w` を押すか、`npm run web` を実行。
 
-### Step 4: Open in Expo Go (optional)
+### ステップ 4: Expo Go で開く（任意）
 
-1. Install **Expo Go** from the App Store (iOS) or Google Play (Android).
-2. Ensure your phone and computer are on the same Wi‑Fi network.
-3. Scan the QR code shown in the terminal with Expo Go (Android) or the Camera app (iOS).
+1. App Store（iOS）または Google Play（Android）から **Expo Go** をインストール。
+2. スマートフォンとパソコンが**同じ Wi‑Fi** に接続されていることを確認。
+3. ターミナルに表示された QR コードを、Expo Go（Android）またはカメラアプリ（iOS）でスキャン。
 
-**Note:** Some features (push notifications on Android, local reminders on Android, background task) do **not** work in Expo Go. Use a **development build** for full functionality (see build sections below).
+**注意:** 一部の機能（Android のプッシュ通知、Android のローカルリマインダー、バックグラウンドタスク）は **Expo Go では動作しません**。フル機能を使うには **開発ビルド** を使用してください（下記ビルドセクション参照）。
 
 ---
 
-## 2. How to Build Android
+## 2. Android のビルド
 
-Builds are done with **EAS Build** (Expo Application Services). You do not need Android Studio on your machine; the build runs in the cloud.
+ビルドは **EAS Build**（Expo Application Services）で行います。Android Studio はローカルに不要で、ビルドはクラウドで実行されます。
 
-### Prerequisites
+### 必要な環境
 
 - **EAS CLI:** `npm install -g eas-cli`
-- **Expo account:** Sign in with `eas login`
-- **Android:** No extra local setup required for EAS cloud builds
+- **Expo アカウント:** `eas login` でサインイン
+- **Android:** EAS クラウドビルドのため、追加のローカル環境は不要
 
-### Step 1: Configure the project (already done)
+### ステップ 1: プロジェクト設定（済）
 
-- `app.json` – Android `package` is `com.odza.app`, `googleServicesFile` points to `./google-services.json`.
-- `eas.json` – Build profiles: `development`, `preview`, `production`.
+- `app.json` – Android の `package` は `com.odza.app`、`googleServicesFile` は `./google-services.json` を参照。
+- `eas.json` – ビルドプロファイル: `development`、`preview`、`production`。
 
-### Step 2: Choose a build profile
+### ステップ 2: ビルドプロファイルの選択
 
-| Profile       | Use case                          | Command |
-|---------------|-----------------------------------|---------|
-| **development** | Testing on device, push, reminders, background task | `eas build --profile development --platform android` |
-| **preview**     | Internal distribution (APK), no store | `eas build --profile preview --platform android`     |
-| **production**  | Play Store (AAB)                 | `eas build --profile production --platform android` |
+| プロファイル   | 用途                                           | コマンド |
+|----------------|------------------------------------------------|----------|
+| **development** | 実機テスト、プッシュ、リマインダー、バックグラウンドタスク | `eas build --profile development --platform android` |
+| **preview**     | 社内配布用（APK）、ストア提出なし             | `eas build --profile preview --platform android`     |
+| **production**  | Google Play 提出用（AAB）                      | `eas build --profile production --platform android`   |
 
-### Step 3: Run the build
+### ステップ 3: ビルドの実行
 
-**Development build (recommended for testing):**
+**開発ビルド（テスト推奨）:**
 
 ```bash
 eas build --profile development --platform android
 ```
 
-**Production build:**
+**本番ビルド:**
 
 ```bash
 eas build --profile production --platform android
 ```
 
-### Step 4: Wait and install
+### ステップ 4: 完了後のインストール
 
-1. EAS will prompt for credentials/setup the first time (e.g. keystore).
-2. The build runs on Expo’s servers; progress is shown in the terminal.
-3. When finished, you get a link to download the **APK** (preview/development) or **AAB** (production).
-4. Install the APK on your device, or submit the AAB to Google Play Console.
+1. 初回は EAS がキーストアなどの認証情報の設定を促します。
+2. ビルドは Expo のサーバーで実行され、進捗がターミナルに表示されます。
+3. 完了後、**APK**（preview/development）または **AAB**（production）のダウンロードリンクが発行されます。
+4. APK を端末にインストールするか、AAB を Google Play Console に提出します。
 
-### Step 5: (Optional) List existing builds
+### ステップ 5: （任意）既存ビルドの一覧
 
 ```bash
 eas build:list --platform android
@@ -108,51 +110,51 @@ eas build:list --platform android
 
 ---
 
-## 3. How to Build iOS
+## 3. iOS のビルド
 
-iOS builds also use **EAS Build**. A Mac is **not** required; the build runs in the cloud.
+iOS も **EAS Build** でビルドします。**Mac は必須ではありません**。ビルドはクラウドで実行されます。
 
-### Prerequisites
+### 必要な環境
 
 - **EAS CLI:** `npm install -g eas-cli`
-- **Expo account:** `eas login`
-- **Apple Developer account** (paid) for distribution to TestFlight/App Store
-- First-time setup: accept Apple’s agreements in [App Store Connect](https://appstoreconnect.apple.com) if prompted
+- **Expo アカウント:** `eas login`
+- **Apple Developer アカウント**（有料）– TestFlight / App Store 配布用
+- 初回: [App Store Connect](https://appstoreconnect.apple.com) で Apple の利用規約に同意（案内があれば）
 
-### Step 1: Configure the project (already done)
+### ステップ 1: プロジェクト設定（済）
 
-- `app.json` – iOS `bundleIdentifier` is `com.odza.app`.
-- `eas.json` – Same profiles as Android: `development`, `preview`, `production`.
+- `app.json` – iOS の `bundleIdentifier` は `com.odza.app`。
+- `eas.json` – Android と同様のプロファイル: `development`、`preview`、`production`。
 
-### Step 2: Choose a build profile
+### ステップ 2: ビルドプロファイルの選択
 
-| Profile       | Use case                          |
-|---------------|-----------------------------------|
-| **development** | Testing on device, push, reminders |
-| **preview**     | Internal (TestFlight or ad-hoc)   |
-| **production**  | App Store                         |
+| プロファイル   | 用途                               |
+|----------------|------------------------------------|
+| **development** | 実機テスト、プッシュ、リマインダー |
+| **preview**     | 社内配布（TestFlight または ad-hoc） |
+| **production**  | App Store 提出                     |
 
-### Step 3: Run the build
+### ステップ 3: ビルドの実行
 
-**Development build:**
+**開発ビルド:**
 
 ```bash
 eas build --profile development --platform ios
 ```
 
-**Production build:**
+**本番ビルド:**
 
 ```bash
 eas build --profile production --platform ios
 ```
 
-### Step 4: Credentials and install
+### ステップ 4: 認証情報とインストール
 
-1. First run: EAS may ask you to sign in with your **Apple ID** and create or select provisioning profiles/certificates.
-2. Build runs in the cloud; when it finishes you get a link to the **.ipa**.
-3. Install via the link/QR code (development/preview) or upload to App Store Connect (production).
+1. 初回: EAS が **Apple ID** でのサインインと、プロビジョニングプロファイル／証明書の作成・選択を案内します。
+2. ビルドはクラウドで実行され、完了後に **.ipa** のリンクが発行されます。
+3. リンク／QR コードでインストール（development/preview）、または App Store Connect にアップロード（production）。
 
-### Step 5: (Optional) List existing builds
+### ステップ 5: （任意）既存ビルドの一覧
 
 ```bash
 eas build:list --platform ios
@@ -160,187 +162,187 @@ eas build:list --platform ios
 
 ---
 
-## 4. Push Notifications (Android and iOS)
+## 4. プッシュ通知（Android / iOS）
 
-The app supports **remote push notifications** (Expo Push) and **local reminder notifications**. Behaviour differs slightly on Android and iOS, and in Expo Go vs development/production builds.
+アプリは **リモートプッシュ**（Expo Push）と **ローカルリマインダー通知** に対応しています。Android / iOS、および Expo Go と開発・本番ビルドで挙動が一部異なります。
 
-### 4.1 Overview
+### 4.1 概要
 
-| Feature              | Android (Expo Go)     | Android (Dev build) | iOS (Expo Go) | iOS (Dev build) |
-|----------------------|-----------------------|----------------------|---------------|------------------|
-| Remote push (Expo)   | Not supported         | Supported            | Supported     | Supported        |
-| Local reminders      | Not scheduled         | Scheduled            | Scheduled     | Scheduled        |
-| Background task push | Not run               | Run                  | Run           | Run              |
+| 機能                 | Android（Expo Go） | Android（開発ビルド） | iOS（Expo Go） | iOS（開発ビルド） |
+|----------------------|--------------------|-------------------------|----------------|---------------------|
+| リモートプッシュ     | 非対応             | 対応                    | 対応           | 対応                |
+| ローカルリマインダー | スケジュールされない | スケジュールされる      | スケジュールされる | スケジュールされる  |
+| バックグラウンドプッシュ | 実行されない       | 実行される              | 実行される     | 実行される          |
 
-- **Expo Go on Android:** Push and reminder logic is intentionally skipped to avoid runtime errors (SDK 53+).
-- **Development/production builds:** Full push and reminder behaviour is enabled.
+- **Android の Expo Go:** プッシュとリマインダーは、ランタイムエラー回避のため意図的に無効化されています（SDK 53+）。
+- **開発・本番ビルド:** プッシュとリマインダーは有効です。
 
-### 4.2 How push is set up (step by step)
+### 4.2 プッシュの設定（ステップ別）
 
-1. **On app launch (`app/_layout.tsx`)**  
-   - If not Android Expo Go:
-     - `setNotificationHandler` is called so that when a **remote** push arrives **while the app is open**, the notification is shown (banner, list, sound).
-     - `loadAndSyncReminderNotifications()` runs: permission, Android channel, and **local** reminder schedules are synced from storage.
-     - `registerForPushNotificationsAsync()` runs: permission is requested (if needed), and the **Expo Push Token** is obtained and stored locally (`@zaf/expo_push_token`). No UI is shown; this is automatic.
+1. **アプリ起動時（`app/_layout.tsx`）**  
+   - Android Expo Go 以外の場合:
+     - **リモート**プッシュが**アプリ起動中**に届いたときに通知を表示するため、`setNotificationHandler` が設定されます。
+     - `loadAndSyncReminderNotifications()` が実行され、権限・Android チャンネル・**ローカル**リマインダーのスケジュールがストレージと同期されます。
+     - `registerForPushNotificationsAsync()` が実行され、権限要求（必要な場合）ののち **Expo Push トークン** が取得され、ローカル（`@zaf/expo_push_token`）に保存されます。UI には表示されず、自動で行われます。
 
-2. **Push token storage**  
-   - Implemented in `lib/push-notifications.ts`:
-     - `registerForPushNotificationsAsync()` – requests permission, gets Expo Push Token, saves it with AsyncStorage.
-     - `getStoredExpoPushToken()` – returns the stored token (used by the background task and any future backend).
+2. **プッシュトークンの保存**  
+   - 実装: `lib/push-notifications.ts`
+     - `registerForPushNotificationsAsync()` … 権限要求、Expo Push トークン取得、AsyncStorage に保存。
+     - `getStoredExpoPushToken()` … 保存されたトークンを返す（バックグラウンドタスクや将来のバックエンドで使用）。
 
-3. **When a remote push is received**  
-   - **Foreground:** The handler set in step 1 decides whether to show the notification (we show it).
-   - **Background/quit:** The system shows the notification.  
-   - **Tap:** `addNotificationResponseReceivedListener` in `_layout.tsx` runs; if the payload has `data.url` or `data.screen`, the app navigates to that route.
+3. **リモートプッシュ受信時**  
+   - **フォアグラウンド:** 上記で設定したハンドラが通知を表示するか判定（本アプリでは表示）。
+   - **バックグラウンド／終了時:** OS が通知を表示。  
+   - **タップ時:** `_layout.tsx` の `addNotificationResponseReceivedListener` が実行され、ペイロードに `data.url` または `data.screen` があれば、その画面へ遷移します。
 
-4. **Sending a remote push**  
-   - Use [Expo Push Tool](https://expo.dev/notifications) or the Expo Push API:
+4. **リモートプッシュの送信**  
+   - [Expo Push Tool](https://expo.dev/notifications) または Expo Push API を使用:
      - **POST** `https://exp.host/--/api/v2/push/send`
-     - Body example: `{ "to": "ExponentPushToken[xxx]", "title": "...", "body": "...", "data": { "screen": "/(tabs)" } }`
-   - The `to` value must be the token stored by the app (e.g. from `getStoredExpoPushToken()` or your backend). The app does not expose this token in the UI; it is used internally (e.g. by the background task).
+     - ボディ例: `{ "to": "ExponentPushToken[xxx]", "title": "...", "body": "...", "data": { "screen": "/(tabs)" } }`
+   - `to` にはアプリが保存したトークン（例: `getStoredExpoPushToken()` やバックエンドから取得）を指定します。アプリの UI ではトークンは表示されず、内部（バックグラウンドタスクなど）でのみ使用されます。
 
-### 4.3 Local reminder notifications (Android and iOS)
+### 4.3 ローカルリマインダー通知（Android / iOS）
 
-- Implemented in `lib/reminder-notifications.ts`.
-- **Expo Go on Android:** This module does **not** schedule anything (to avoid loading unsupported native code).
-- **Development/production (and iOS Expo Go):**
-  1. **Permission and channel:** `setupReminderNotifications()` requests permission and creates the Android channel `zaf-reminders`.
-  2. **Storage:** Reminders are stored in AsyncStorage (`@zaf/reminders`) as a list of `{ id, time: "HH:mm", enabled }`. Optional custom title/body for the notification are in `@zaf/reminder_notification_title` and `@zaf/reminder_notification_body` (body can use `{time}`).
-  3. **Scheduling:** `syncReminderNotifications(reminders)` cancels existing reminder notifications and schedules one **local** notification per enabled reminder with a **daily** trigger at that time (e.g. 08:41). Title/body come from storage or defaults (e.g. "ZAF リマインダー", "瞑想の時間です。（08:41）").
-  4. **When reminders change:** Settings screen calls `syncReminderNotifications` when the user adds, edits, deletes, or toggles reminders.
+- 実装: `lib/reminder-notifications.ts`。
+- **Android の Expo Go:** このモジュールは**何もスケジュールしません**（未対応のネイティブコード読み込みを避けるため）。
+- **開発・本番ビルド（および iOS の Expo Go）:**
+  1. **権限とチャンネル:** `setupReminderNotifications()` が権限を要求し、Android チャンネル `zaf-reminders` を作成します。
+  2. **ストレージ:** リマインダーは AsyncStorage（`@zaf/reminders`）に `{ id, time: "HH:mm", enabled }` の配列で保存されます。通知のタイトル・本文のカスタムは `@zaf/reminder_notification_title` と `@zaf/reminder_notification_body`（本文で `{time}` が使えます）。
+  3. **スケジュール:** `syncReminderNotifications(reminders)` が既存のリマインダー通知をキャンセルし、有効なリマインダーごとに**ローカル**通知を 1 件、その時刻に**毎日**発火するようスケジュールします（例: 08:41）。タイトル・本文はストレージまたはデフォルト（例: 「ZAF リマインダー」「瞑想の時間です。（08:41）」）から取得します。
+  4. **リマインダー変更時:** 設定画面で追加・編集・削除・ON/OFF したときに、Settings が `syncReminderNotifications` を呼び出します。
 
-So: **local reminders** = device-side scheduling at a fixed time each day; **remote push** = sent by your server or by the background task (below).
+**ローカルリマインダー** = 端末側で毎日決まった時刻に発火する通知。**リモートプッシュ** = サーバーまたはバックグラウンドタスク（下記）から送信する通知。
 
-### 4.4 Background task sending a push at reminder time (Android and iOS)
+### 4.4 リマインダー時刻にプッシュを送るバックグラウンドタスク（Android / iOS）
 
-- Implemented in `lib/background.ts` using **expo-background-task**.
-- **Expo Go:** The task is **not** registered (avoids “not available” warnings).
-- **Development/production:**
-  1. **Registration:** On app start, `registerBackgroundFetchAsync()` registers a single task with a **minimum interval of 15 minutes** (OS may enforce a longer interval).
-  2. **When the task runs:**  
-     - Reads current time (HH:mm).  
-     - Loads reminders from storage; if any **enabled** reminder has `time === current HH:mm`:  
-       - Loads stored Expo Push Token, reminder title, and body (with `{time}` replaced).  
-       - **POSTs** to `https://exp.host/--/api/v2/push/send` with `to`, `title`, `body`, `sound: 'default'`, and on Android `channelId: 'zaf-reminders'`.  
-     - So at that moment the app effectively “sends a request to Expo” and Expo delivers a **remote** push to the same device.
-  3. **Limitation:** The task runs every 15+ minutes, so a reminder at 8:41 only triggers a push **if** the task run happens at 8:41. For **exact** daily times, **local** reminders (section 4.3) are more reliable when the app is not Expo Go.
+- 実装: `lib/background.ts`（**expo-background-task** 使用）。
+- **Expo Go:** タスクは**登録されません**（「利用できません」警告を避けるため）。
+- **開発・本番ビルド:**
+  1. **登録:** アプリ起動時に `registerBackgroundFetchAsync()` が、**最低 15 分間隔**のタスクを 1 つ登録します（OS がより長い間隔にすることもあります）。
+  2. **タスク実行時:**  
+     - 現在時刻（HH:mm）を取得。  
+     - ストレージからリマインダーを読み込み、**有効**なリマインダーのうち `time === 現在時刻` のものがあれば:  
+       - 保存されている Expo Push トークン、リマインダーのタイトル・本文（`{time}` を置換）を読み込み。  
+       - **POST** で `https://exp.host/--/api/v2/push/send` に `to`、`title`、`body`、`sound: 'default'`、Android の場合は `channelId: 'zaf-reminders'` を送信。  
+     - この時点でアプリは Expo にリクエストを送り、Expo が**リモート**プッシュを同じ端末に配信します。
+  3. **制限:** タスクは 15 分以上間隔で実行されるため、8:41 のリマインダーは**8:41 にタスクが実行された場合のみ**プッシュが送られます。**正確な毎日の時刻**には、**ローカル**リマインダー（4.3）の方が、Expo Go 以外では確実です。
 
-### 4.5 Summary
+### 4.5 まとめ
 
-- **Run the app:** Push token is registered automatically on launch; no “Get Token” button.
-- **Android:** Use a **development build** for push and reminders; Expo Go on Android does not support them.
-- **iOS:** Push and reminders work in Expo Go and in builds; production push needs APNs credentials in EAS.
-- **Remote push:** Send via Expo Push API or Expo Push Tool using the stored token.
-- **Reminders:** Local notifications for exact times (when not Expo Go Android); background task can additionally send a remote push when its run coincides with a reminder time.
-
----
-
-## 5. Business Logic (Step by Step)
-
-All persistent data is stored in **AsyncStorage** (no backend). Keys are prefixed with `@zaf/`.
-
-### 5.1 Onboarding and first launch
-
-1. **Splash / routing**  
-   - `app/index.tsx` (or entry) checks `getOnboardingCompleted()` from storage.
-  2. If **false:** User is sent to onboarding flow: `splash` → `onboarding` → `goal-setup` → `goal-setup-step2` → `goal-setup-step3`. On completion, `setOnboardingCompleted(true)` and `setAppUsageStartDate(isoDate)` are called, then user is sent to the main app `(tabs)`.
-  3. If **true:** User goes directly to `(tabs)` (Home).
-
-### 5.2 Mission goal (目標日数) and daily target
-
-- **Goal days:** Number of days the user wants to complete per “mission” (e.g. 20).  
-  - Stored: `@zaf/goal_days`.  
-  - Settings screen: user can change value; `setGoalDays` / `getGoalDays` in `lib/storage.ts`.
-- **Daily meditation target (minutes):** A calendar day counts as “completed” only if total meditation that day ≥ this value.  
-  - Stored: `@zaf/daily_meditation_target_minutes`.  
-  - Settings: user can set 1–1440; `setDailyMeditationTargetMinutes` / `getDailyMeditationTargetMinutes`.
-
-### 5.3 Progress (circle on Home)
-
-1. **Data:** Home loads `getGoalDays()`, `getDailyMeditationTargetMinutes()`, and `getSessions()`.
-2. **Completed days:** `getProgressDaysCount(sessions, targetMinutes)` in `lib/storage.ts`:
-   - Groups sessions by `date` (ISO date).
-   - Sums minutes per day (using `sessionMinutes(s)` per session).
-   - Counts days where sum ≥ `targetMinutes`.
-3. **Display:** Progress ring shows `completedDays / goalDays` (capped so it doesn’t exceed the goal). So progress = “how many days reached the daily target” toward the current goal.
-
-### 5.4 Today’s meditation time
-
-- **Computation:** `getMinutesForDate(sessions, todayISO)` – sum of all session minutes for today.
-- **Display:** Shown on Home as “今日の瞑想時間: X分 / Y分” (today’s minutes / daily target).
-
-### 5.5 Sessions and history
-
-- **Model:** Each session is `SessionRecord`: `date` (ISO), `durationMinutes`, optional `durationSeconds`, `type`, `completedAt`.
-- **Storage:** `@zaf/sessions` – array of session records. Only the last **30 days** are kept (`SESSION_HISTORY_RETENTION_DAYS`); older ones are pruned when sessions are read.
-- **Adding a session:** When the user finishes a session (e.g. in session timer or guidance flow), the app calls `addSession(...)` (or equivalent) which appends a new record and then **updates missions achieved** (see below).
-
-### 5.6 Missions achieved (missions count)
-
-- **Stored:** `@zaf/missions_achieved` – a single number that **only increases** when the user completes a full goal (e.g. 20 days).
-- **Logic (in `lib/storage.ts`):** When sessions are updated (e.g. after adding a session), the app:
-  - Computes `progressDays = getProgressDaysCount(sessions, targetMinutes)` and `goalDays = getGoalDays()`.
-  - Computes how many **full goal cycles** are now completed: `newCycles = Math.floor(progressDays / goalDays)`, and previously `oldCycles` from the last stored state (or 0).
-  - If `newCycles > oldCycles`, it calls `setMissionsAchieved(getMissionsAchieved() + (newCycles - oldCycles))`.
-- So “missions achieved” is a persistent, non-decreasing count of completed goals; changing goal days later does not reduce it.
-
-### 5.7 Reminders (リマインダー)
-
-- **Storage:** `@zaf/reminders` – array of `{ id, time: "HH:mm", enabled }`. Optional: `@zaf/reminder_notification_title`, `@zaf/reminder_notification_body` (body can contain `{time}`).
-- **UI:** Settings screen lists reminders; user can add (with time picker), edit (tap time), delete, or toggle enabled. Max 10 reminders.
-- **Sync:** On any change, Settings calls `syncReminderNotifications(reminders)` so local scheduled notifications match the list (see section 4.3). Custom title/body are saved to storage and used when scheduling and when the background task sends a push (see section 4.4).
-
-### 5.8 Profile and theme
-
-- **Profile:** Display name, icon (preset or custom image), color – stored in `@zaf/display_name`, `@zaf/profile_icon`, `@zaf/color_scheme`, `@zaf/custom_profile_images`. Edited in profile-settings and profile-edit-* screens.
-- **Theme:** Light / dark / system – stored in `@zaf/color_scheme`; applied via `ThemePreferenceContext` and navigation theme.
-
-### 5.9 Session timer and BGM
-
-- **Timer preset, BGM track, timer end sound, BGM on/off:** Stored in `@zaf/timer_preset`, `@zaf/bgm_track`, `@zaf/timer_end_sound`, `@zaf/session_bgm_enabled`, etc. Session screen and timer screen read/write these and start the timer; on completion, a session record is added and missions achieved are updated as in 5.5 and 5.6.
-
-### 5.10 Record / stats (profile or goal detail)
-
-- **Source:** `getRecordStats()` in `lib/storage.ts` loads app start date, sessions, goal days, daily target, and `getMissionsAchieved()`. It computes total meditation days, total count, total minutes, and returns them with `missionsAchieved`. Used by the Record tab or goal-detail screen to show “DAYS”, “HOURS”, “MISSIONS” and history.
+- **アプリ起動:** プッシュトークンは起動時に自動登録され、「トークン取得」ボタンはありません。
+- **Android:** プッシュとリマインダーには**開発ビルド**を使用。Expo Go の Android では対応していません。
+- **iOS:** プッシュとリマインダーは Expo Go およびビルドで動作。本番プッシュには EAS で APNs の認証情報が必要です。
+- **リモートプッシュ:** 保存されたトークンを使って Expo Push API または Expo Push Tool から送信。
+- **リマインダー:** 正確な時刻にはローカル通知（Expo Go Android 以外）。バックグラウンドタスクの実行がリマインダー時刻と重なった場合、リモートプッシュも送信されます。
 
 ---
 
-## File overview (key pieces of business logic)
+## 5. ビジネスロジック（ステップ別）
 
-| Area              | Main files / modules |
-|-------------------|----------------------|
-| Storage           | `lib/storage.ts` (all keys, get/set, progress and missions logic) |
-| Push token        | `lib/push-notifications.ts` |
-| Reminders (local) | `lib/reminder-notifications.ts` |
-| Background push   | `lib/background.ts` |
-| App startup       | `app/_layout.tsx` (notification handler, reminder sync, push registration, background task registration) |
-| Home progress     | `app/(tabs)/index.tsx` (goal, daily target, sessions, progress ring, today’s time) |
-| Settings          | `app/(tabs)/settings.tsx` (goal days, daily target, reminders, notification title/body) |
-| Session / timer   | `app/(tabs)/session.tsx`, `app/session-timer.tsx` (and any guidance flow that adds sessions) |
+永続データはすべて **AsyncStorage** に保存されています（バックエンドなし）。キーは `@zaf/` で始まります。
+
+### 5.1 オンボーディングと初回起動
+
+1. **スプラッシュ／ルーティング**  
+   - `app/index.tsx`（またはエントリ）がストレージの `getOnboardingCompleted()` を参照します。
+2. **false の場合:** オンボーディングへ: `splash` → `onboarding` → `goal-setup` → `goal-setup-step2` → `goal-setup-step3`。完了時に `setOnboardingCompleted(true)` と `setAppUsageStartDate(isoDate)` が呼ばれ、メインアプリ `(tabs)` へ遷移します。
+3. **true の場合:** そのまま `(tabs)`（ホーム）へ遷移します。
+
+### 5.2 ミッション目標（目標日数）と 1 日あたりの目標
+
+- **目標日数:** 1 回の「ミッション」で達成したい日数（例: 20 日）。  
+  - 保存先: `@zaf/goal_days`。  
+  - 設定画面で変更可能。`lib/storage.ts` の `setGoalDays` / `getGoalDays`。
+- **1 日あたりの瞑想目標（分）:** その日の合計瞑想時間がこの値以上の場合のみ、その日を「達成」とカウントします。  
+  - 保存先: `@zaf/daily_meditation_target_minutes`。  
+  - 設定で 1～1440 分を指定。`setDailyMeditationTargetMinutes` / `getDailyMeditationTargetMinutes`。
+
+### 5.3 進捗（ホームの円グラフ）
+
+1. **データ:** ホームは `getGoalDays()`、`getDailyMeditationTargetMinutes()`、`getSessions()` を読み込みます。
+2. **達成日数:** `lib/storage.ts` の `getProgressDaysCount(sessions, targetMinutes)`:
+   - セッションを `date`（ISO 日付）でグループ化。
+   - 日ごとの分数を合計（セッションごとに `sessionMinutes(s)` を使用）。
+   - 合計が `targetMinutes` 以上の日数をカウント。
+3. **表示:** 進捗リングは `達成日数 / 目標日数` を表示（目標を超えないようキャップ）。進捗 = 「1 日目標を達成した日が何日か」を現在の目標に対して表示します。
+
+### 5.4 今日の瞑想時間
+
+- **計算:** `getMinutesForDate(sessions, todayISO)` … 今日の全セッションの分数の合計。
+- **表示:** ホームに「今日の瞑想時間: X分 / Y分」（今日の分数 / 1 日目標）として表示。
+
+### 5.5 セッションと履歴
+
+- **モデル:** 各セッションは `SessionRecord`: `date`（ISO）、`durationMinutes`、任意で `durationSeconds`、`type`、`completedAt`。
+- **保存先:** `@zaf/sessions` … セッションの配列。**直近 30 日分**のみ保持（`SESSION_HISTORY_RETENTION_DAYS`）。読み込み時に古い分は削除されます。
+- **セッション追加:** ユーザーがセッションを終了したとき（セッションタイマーやガイダンスフローなど）、アプリが `addSession(...)`（または同等）を呼び、新規レコードを追加したあと**ミッション達成数**を更新します（下記参照）。
+
+### 5.6 ミッション達成数
+
+- **保存先:** `@zaf/missions_achieved` … ユーザーが目標を完全に達成したとき（例: 20 日）に**のみ**増える数値。
+- **ロジック（`lib/storage.ts`）:** セッション更新時（例: セッション追加後）、アプリは:
+  - `progressDays = getProgressDaysCount(sessions, targetMinutes)` と `goalDays = getGoalDays()` を計算。
+  - 達成した**目標サイクル数**を計算: `newCycles = Math.floor(progressDays / goalDays)`。前回の状態（または 0）から `oldCycles` を取得。
+  - `newCycles > oldCycles` なら `setMissionsAchieved(getMissionsAchieved() + (newCycles - oldCycles))` を呼びます。
+- 「ミッション達成数」は、達成した目標の累積で、**減ることはありません**。後から目標日数を変えても減りません。
+
+### 5.7 リマインダー
+
+- **保存先:** `@zaf/reminders` … `{ id, time: "HH:mm", enabled }` の配列。任意: `@zaf/reminder_notification_title`、`@zaf/reminder_notification_body`（本文で `{time}` が使えます）。
+- **UI:** 設定画面で一覧表示。追加（時刻ピッカー）、編集（時刻タップ）、削除、ON/OFF が可能。最大 10 件。
+- **同期:** 変更のたびに Settings が `syncReminderNotifications(reminders)` を呼び、ローカルでスケジュールされている通知が一覧と一致するようにします（4.3 参照）。カスタムのタイトル・本文はストレージに保存され、スケジュール時およびバックグラウンドタスクがプッシュを送る際（4.4 参照）に使われます。
+
+### 5.8 プロフィールとテーマ
+
+- **プロフィール:** 表示名、アイコン（プリセットまたはカスタム画像）、カラー … `@zaf/display_name`、`@zaf/profile_icon`、`@zaf/color_scheme`、`@zaf/custom_profile_images` に保存。profile-settings および profile-edit-* 画面で編集。
+- **テーマ:** ライト / ダーク / システム … `@zaf/color_scheme` に保存。`ThemePreferenceContext` とナビゲーションのテーマで適用されます。
+
+### 5.9 セッションタイマーと BGM
+
+- **タイマープリセット、BGM トラック、タイマー終了音、BGM ON/OFF:** `@zaf/timer_preset`、`@zaf/bgm_track`、`@zaf/timer_end_sound`、`@zaf/session_bgm_enabled` などに保存。セッション画面とタイマー画面で読み書きし、タイマーを開始。完了時にセッションレコードが追加され、5.5・5.6 と同様にミッション達成数が更新されます。
+
+### 5.10 レコード／統計（プロフィールまたは目標詳細）
+
+- **取得:** `lib/storage.ts` の `getRecordStats()` がアプリ開始日、セッション、目標日数、1 日目標、`getMissionsAchieved()` を読み込み、総瞑想日数・総回数・総分数を計算し、`missionsAchieved` とともに返します。レコードタブまたは goal-detail 画面で「DAYS」「HOURS」「MISSIONS」と履歴を表示するために使用されます。
 
 ---
 
-## Quick reference commands
+## ファイル概要（ビジネスロジックの主な担当）
+
+| 領域           | 主なファイル / モジュール |
+|----------------|---------------------------|
+| ストレージ     | `lib/storage.ts`（全キー、get/set、進捗・ミッションロジック） |
+| プッシュトークン | `lib/push-notifications.ts` |
+| リマインダー（ローカル） | `lib/reminder-notifications.ts` |
+| バックグラウンドプッシュ | `lib/background.ts` |
+| アプリ起動     | `app/_layout.tsx`（通知ハンドラ、リマインダー同期、プッシュ登録、バックグラウンドタスク登録） |
+| ホーム進捗     | `app/(tabs)/index.tsx`（目標、1 日目標、セッション、進捗リング、今日の時間） |
+| 設定           | `app/(tabs)/settings.tsx`（目標日数、1 日目標、リマインダー、通知タイトル・本文） |
+| セッション / タイマー | `app/(tabs)/session.tsx`、`app/session-timer.tsx`（およびセッションを追加するガイダンスフロー） |
+
+---
+
+## コマンド早見表
 
 ```bash
-# Run app
+# アプリの起動
 npm install && npm start
 
-# Build Android (development)
+# Android ビルド（開発用）
 eas build --profile development --platform android
 
-# Build Android (production)
+# Android ビルド（本番用）
 eas build --profile production --platform android
 
-# Build iOS (development)
+# iOS ビルド（開発用）
 eas build --profile development --platform ios
 
-# Build iOS (production)
+# iOS ビルド（本番用）
 eas build --profile production --platform ios
 
-# List builds
+# ビルド一覧
 eas build:list --platform android
 eas build:list --platform ios
 ```
 
-For more on EAS and credentials, see [Expo EAS Build](https://docs.expo.dev/build/introduction/). For push details, see `docs/push-notifications.md` in this repo.
+EAS と認証情報の詳細は [Expo EAS Build](https://docs.expo.dev/build/introduction/) を参照してください。プッシュの詳細はリポジトリ内の `docs/push-notifications.md` を参照してください。
