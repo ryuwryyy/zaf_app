@@ -94,7 +94,10 @@ function createHomeStyles(
     menuThumb: { width: '100%' as const, height: '100%' as const, borderRadius: scaleSize(10) },
     menuPlayOverlay: { position: 'absolute' as const, left: 0, right: 0, top: 0, bottom: 0, alignItems: 'center' as const, justifyContent: 'center' as const, borderRadius: scaleSize(10) },
     menuPlayCircle: { width: scaleSize(48), height: scaleSize(48), borderRadius: scaleSize(24), backgroundColor: 'rgba(0, 0, 0, 0.65)', alignItems: 'center' as const, justifyContent: 'center' as const },
-    quoteText: { fontSize: typography.body.fontSize, lineHeight: scaleSize(26), letterSpacing: 0.3, fontWeight: '500' as const, textAlign: 'left' as const, marginTop: spacing.xs },
+    quoteText: { fontSize: typography.body.fontSize + 2, lineHeight: scaleSize(26), letterSpacing: 0.3, fontWeight: '500' as const, textAlign: 'left' as const, marginTop: spacing.xs },
+    quoteAttributionRow: { flexDirection: 'row' as const, alignItems: 'center' as const, justifyContent: 'flex-end' as const, marginTop: spacing.xs, gap: spacing.sm },
+    quoteDashLine: { width: scaleSize(40), height: 1 },
+    quoteAttribution: { fontSize: typography.body.fontSize, lineHeight: scaleSize(26), letterSpacing: 0.3, fontWeight: '500' as const },
   };
 }
 
@@ -310,14 +313,19 @@ export default function HomeScreen() {
 
         <View style={[styles.divider, { backgroundColor: borderColor, marginTop: spacing.lg, marginBottom: spacing.md }]} />
 
-        {/* Today's quote */}
+        {/* Today's quote / 今日の気づき */}
         <View style={[styles.section, { marginTop: spacing.xl, marginBottom: spacing.xxl }]}>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>今日の名言</Text>
+          <Text style={[styles.sectionTitle, { color: textColor }]}>今日の気づき</Text>
           <Text style={[styles.quoteText, { color: textMuted }]}>
             今あるものに満たされない者は{'\n'}
-            これから欲しいものにも満たされない{'\n'}
-            ソクラテス(古代ギリシャの哲学者)
+            これから欲しいものにも満たされない
           </Text>
+          <View style={styles.quoteAttributionRow}>
+            <View style={[styles.quoteDashLine, { backgroundColor: textMuted }]} />
+            <Text style={[styles.quoteAttribution, { color: textMuted }]}>
+              ソクラテス(古代ギリシャの哲学者)
+            </Text>
+          </View>
         </View>
       </ScrollView>
     </View>

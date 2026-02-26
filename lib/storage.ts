@@ -494,7 +494,7 @@ export async function removeBgmFavourite(id: string): Promise<void> {
   await AsyncStorage.setItem(BGM_FAVOURITES_KEY, JSON.stringify(list));
 }
 
-/** Session page: sound when timer ends (e.g. ヒルサイド, なし). */
+/** Session page: sound when timer ends (e.g. ヒルサイド, ベル, オフ). */
 const DEFAULT_TIMER_END_SOUND = 'ヒルサイド';
 
 export async function getTimerEndSound(): Promise<string> {

@@ -36,6 +36,15 @@ function createOnboardingStyles(
       letterSpacing: 2,
       marginBottom: scaleSize(24),
     },
+    /** Two-line title (slide 2): same line spacing as section1Slide3 */
+    headlineTwoLines: {
+      fontSize: scaleSize(26),
+      fontWeight: '600' as const,
+      color: '#fff' as const,
+      lineHeight: scaleSize(34),
+      letterSpacing: 2,
+      marginBottom: scaleSize(24),
+    },
     section1Slide3: {
       fontSize: scaleSize(24),
       lineHeight: scaleSize(34),
@@ -166,9 +175,17 @@ export default function OnboardingScreen() {
               </>
             ) : (
               <>
-                <Text style={styles.headline}>
-                  {item.headline}
-                </Text>
+                {item.subhead != null && item.redLabel == null ? (
+                  <Text style={styles.headlineTwoLines}>
+                    {item.headline}
+                    {'\n'}
+                    {item.subhead}
+                  </Text>
+                ) : (
+                  <Text style={styles.headline}>
+                    {item.headline}
+                  </Text>
+                )}
                 {item.bodyBeforeRed != null && item.bodyAfterRed != null && item.redLabel != null ? (
                   <Text style={styles.body}>
                     {item.bodyBeforeRed}
@@ -180,7 +197,7 @@ export default function OnboardingScreen() {
                     {item.redLabel != null && (
                       <Text style={styles.redLabel}>{item.redLabel}</Text>
                     )}
-                    {item.subhead != null && (
+                    {item.subhead != null && item.redLabel != null && (
                       <Text style={styles.subhead}>{item.subhead}</Text>
                     )}
                     {item.body ? (

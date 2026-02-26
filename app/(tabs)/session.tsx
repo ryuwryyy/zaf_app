@@ -420,7 +420,13 @@ export default function SessionScreen() {
   const handleBgmPress = useCallback(() => {
     const showBgmOptions = () => {
       const buttons: Array<{ text: string; onPress?: () => void }> = [
-        { text: 'キャンセル', style: 'cancel' },
+        {
+          text: 'オフ',
+          onPress: async () => {
+            setBgmEnabled(false);
+            await setSessionBgmEnabled(false);
+          },
+        },
         {
           text: '端末から音楽を追加',
           onPress: openBgmFromDevice,
@@ -434,13 +440,7 @@ export default function SessionScreen() {
             await setSessionBgmEnabled(true);
           },
         })),
-        {
-          text: 'オフ',
-          onPress: async () => {
-            setBgmEnabled(false);
-            await setSessionBgmEnabled(false);
-          },
-        },
+        { text: 'キャンセル', style: 'cancel' },
       ];
       showAlert(
         'BGMを設定',
@@ -463,7 +463,13 @@ export default function SessionScreen() {
       'タイマー終了時',
       '終了時に再生するサウンドを選んでください',
       [
-        { text: 'キャンセル', style: 'cancel' },
+        {
+          text: 'オフ',
+          onPress: async () => {
+            setTimerEndSoundState('オフ');
+            await setTimerEndSound('オフ');
+          },
+        },
         {
           text: 'ヒルサイド',
           onPress: async () => {
@@ -478,13 +484,7 @@ export default function SessionScreen() {
             await setTimerEndSound('ベル');
           },
         },
-        {
-          text: 'なし',
-          onPress: async () => {
-            setTimerEndSoundState('なし');
-            await setTimerEndSound('なし');
-          },
-        },
+        { text: 'キャンセル', style: 'cancel' },
       ],
       { cancelable: true }
     );
@@ -643,7 +643,7 @@ export default function SessionScreen() {
                 <Pressable style={styles.settingsRow} onPress={handleTimerEndSoundPress}>
                   <Text style={[styles.settingsLabel, { color: textMuted }]}>タイマー終了時</Text>
                   <View style={styles.settingsValueRow}>
-                    <Text style={[styles.settingsValue, { color: textColor }]}>{timerEndSound}</Text>
+                    <Text style={[styles.settingsValue, { color: textColor }]}>{timerEndSound === 'なし' ? 'オフ' : timerEndSound}</Text>
                     <IconSymbol name="chevron.right" size={16} color={textMuted} />
                   </View>
                 </Pressable>
