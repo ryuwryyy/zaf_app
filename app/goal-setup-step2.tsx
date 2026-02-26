@@ -24,7 +24,7 @@ function createGoalSetupStep2Styles(spacing: ScaledSpacing, scaleSize: (n: numbe
     screen: { flex: 1 as const },
     content: { flex: 1 as const, alignItems: 'center' as const },
     stepLabel: {
-      fontSize: scaleSize(56),
+      fontSize: scaleSize(45),
       fontWeight: '900' as const,
       letterSpacing: 2,
       color: STEP2_ORANGE,
@@ -38,14 +38,15 @@ function createGoalSetupStep2Styles(spacing: ScaledSpacing, scaleSize: (n: numbe
     textArea: { minHeight: scaleSize(28), justifyContent: 'center' as const, paddingVertical: scaleSize(4) },
     textAreaSpacer: { minHeight: spacing.lg },
     title: {
-      fontSize: scaleSize(26),
+      fontSize: scaleSize(32),
+      lineHeight: scaleSize(42),
       fontWeight: '800' as const,
       color: STEP2_ORANGE,
       textAlign: 'center' as const,
     },
     bodyLine: {
       fontSize: scaleSize(18),
-      lineHeight: scaleSize(24),
+      lineHeight: scaleSize(27),
       fontWeight: '600' as const,
       color: STEP2_ORANGE,
       textAlign: 'center' as const,
@@ -114,7 +115,7 @@ export default function GoalSetupStep2Screen() {
           <View style={styles.textArea}>
             <Text style={styles.title}>瞑想に取り組む</Text>
           </View>
-          <View style={styles.textArea}>
+          <View style={[styles.textArea, { marginTop: scaleSize(20) }]}>
             <Text style={styles.bodyLine}>
               短時間から自由に瞑想の時間を設定。
             </Text>
@@ -132,6 +133,14 @@ export default function GoalSetupStep2Screen() {
           <View style={styles.textAreaSpacer} />
         </View>
         <View style={styles.spacer} />
+      </ScrollView>
+      <View
+        style={{
+          marginTop: scaleSize(-76),
+          paddingBottom: insets.bottom + spacing.lg,
+          paddingHorizontal: spacing.lg,
+          alignItems: 'center',
+        }}>
         <Pressable
           onPress={handleNext}
           style={({ pressed }) => [
@@ -147,7 +156,7 @@ export default function GoalSetupStep2Screen() {
             style={styles.nextButtonArrow}
           />
         </Pressable>
-      </ScrollView>
+      </View>
     </View>
   );
 }

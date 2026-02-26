@@ -24,7 +24,7 @@ function createGoalSetupStep3Styles(spacing: ScaledSpacing, scaleSize: (n: numbe
     screen: { flex: 1 as const },
     content: { flex: 1 as const, alignItems: 'center' as const },
     stepLabel: {
-      fontSize: scaleSize(56),
+      fontSize: scaleSize(45),
       fontWeight: '900' as const,
       letterSpacing: 2,
       color: STEP3_ORANGE,
@@ -39,13 +39,14 @@ function createGoalSetupStep3Styles(spacing: ScaledSpacing, scaleSize: (n: numbe
     textAreaSpacer: { minHeight: spacing.lg },
     title: {
       fontSize: scaleSize(32),
+      lineHeight: scaleSize(42),
       fontWeight: '800' as const,
       color: STEP3_ORANGE,
       textAlign: 'center' as const,
     },
     bodyLine: {
       fontSize: scaleSize(20),
-      lineHeight: scaleSize(24),
+      lineHeight: scaleSize(27),
       fontWeight: '600' as const,
       color: STEP3_ORANGE,
       textAlign: 'center' as const,
@@ -81,7 +82,7 @@ export default function GoalSetupStep3Screen() {
   const { width, height, spacing, scaleSize } = useResponsive();
   const styles = useMemo(() => createGoalSetupStep3Styles(spacing, scaleSize), [spacing, scaleSize]);
   // Space for circle; reduced so text block stays in same place when we add gap below title (marginBottom 88)
-  const sectionTopMargin = Math.min(scaleSize(310), height * 0.30);
+  const sectionTopMargin = Math.min(scaleSize(350), height * 0.34);
 
   const handleStart = useCallback(async () => {
     const existing = await getAppUsageStartDate();
@@ -105,21 +106,21 @@ export default function GoalSetupStep3Screen() {
           styles.content,
           {
             flexGrow: 1,
-            paddingTop: Math.max(insets.top, scaleSize(28)) + spacing.md,
-            paddingBottom: spacing.lg,
+            paddingTop: Math.max(insets.top, scaleSize(28)) + spacing.xl,
+            paddingBottom: insets.bottom + scaleSize(48),
             paddingHorizontal: spacing.lg,
           },
         ]}
         showsVerticalScrollIndicator={false}>
-        <Text style={[styles.stepLabel, { marginBottom: scaleSize(88) }]}>STEP 3</Text>
-        <View style={[styles.section5, { marginTop: sectionTopMargin, paddingTop: scaleSize(48) }]}>
+        <Text style={styles.stepLabel}>STEP 3</Text>
+        <View style={[styles.section5, { marginTop: sectionTopMargin, paddingTop: scaleSize(36) }]}>
           <View style={styles.textArea}>
             <Text style={styles.title}>習慣を見える化して</Text>
           </View>
           <View style={styles.textArea}>
             <Text style={styles.title}>次のモチベーションへ</Text>
           </View>
-          <View style={styles.textArea}>
+          <View style={[styles.textArea, { marginTop: scaleSize(20) }]}>
             <Text style={styles.bodyLine}>
               瞑想を通したあなたの習慣を記録します。
             </Text>

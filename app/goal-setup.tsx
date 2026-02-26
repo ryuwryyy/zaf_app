@@ -24,7 +24,7 @@ function createGoalSetupStep1Styles(spacing: ScaledSpacing, scaleSize: (n: numbe
     screen: { flex: 1 as const },
     content: { flex: 1 as const, alignItems: 'center' as const },
     stepLabel: {
-      fontSize: scaleSize(56),
+      fontSize: scaleSize(45),
       fontWeight: '900' as const,
       letterSpacing: 2,
       color: STEP1_ORANGE,
@@ -45,7 +45,7 @@ function createGoalSetupStep1Styles(spacing: ScaledSpacing, scaleSize: (n: numbe
     },
     bodyLine: {
       fontSize: scaleSize(20),
-      lineHeight: scaleSize(28),
+      lineHeight: scaleSize(30),
       fontWeight: '600' as const,
       color: STEP1_ORANGE,
       textAlign: 'center' as const,
@@ -129,6 +129,14 @@ export default function GoalSetupScreen() {
           <View style={styles.textAreaSpacer} />
         </View>
         <View style={styles.spacer} />
+      </ScrollView>
+      <View
+        style={{
+          marginTop: scaleSize(-76),
+          paddingBottom: insets.bottom + spacing.lg,
+          paddingHorizontal: spacing.lg,
+          alignItems: 'center',
+        }}>
         <Pressable
           onPress={handleNext}
           style={({ pressed }) => [
@@ -144,7 +152,7 @@ export default function GoalSetupScreen() {
             style={styles.nextButtonArrow}
           />
         </Pressable>
-      </ScrollView>
+      </View>
     </View>
   );
 }
