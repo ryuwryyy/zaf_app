@@ -1,6 +1,6 @@
 /**
  * Edit color/theme preference screen.
- * Used from Profile > カラーを設定する. Saves preference to storage and goes back.
+ * Used from Profile > カラーを設定する. Saves preference and updates theme; user stays on this screen.
  */
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -99,9 +99,8 @@ export default function ProfileEditColorScreen() {
       setSelected(pref);
       await setColorSchemePreference(pref);
       setPreference(pref);
-      router.back();
     },
-    [router, setPreference]
+    [setPreference]
   );
 
   return (

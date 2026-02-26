@@ -147,7 +147,6 @@ function createProfileSettingsStyles(
       letterSpacing: 0.5,
     },
     recordStatsList: { borderRadius: borderRadius.md, borderWidth: 1, overflow: 'hidden' as const },
-    meisouStrike: { textDecorationLine: 'line-through' as const },
     recordStatsRow: {
       flexDirection: 'row' as const,
       alignItems: 'center' as const,
@@ -160,13 +159,13 @@ function createProfileSettingsStyles(
   };
 }
 
-/** Design 17: stat row config; labels containing "瞑想" get strike-through. */
+/** Design 17: stat row config for レコード section. */
 const RECORD_STAT_LABELS = [
-  { key: 'appUsageStart', label: 'アプリ使用開始', strikeMeisou: false },
-  { key: 'totalDays', label: '総瞑想日数', strikeMeisou: true },
-  { key: 'totalCount', label: '総瞑想回数', strikeMeisou: true },
-  { key: 'totalTime', label: '総瞑想時間', strikeMeisou: true },
-  { key: 'missions', label: 'ミッション達成数', strikeMeisou: false },
+  { key: 'appUsageStart', label: 'アプリ使用開始' },
+  { key: 'totalDays', label: '総瞑想日数' },
+  { key: 'totalCount', label: '総瞑想回数' },
+  { key: 'totalTime', label: '総瞑想時間' },
+  { key: 'missions', label: 'ミッション達成数' },
 ];
 
 export default function ProfileSettingsScreen() {
@@ -399,21 +398,7 @@ export default function ProfileSettingsScreen() {
                       },
                     ]}>
                     <Text style={[styles.recordStatsLabel, { color: textColor, fontSize: typography.subhead.fontSize }]}>
-                      {config.strikeMeisou && config.label.includes('瞑想')
-                        ? (() => {
-                            const i = config.label.indexOf('瞑想');
-                            const before = config.label.slice(0, i);
-                            const meisou = config.label.slice(i, i + 2);
-                            const after = config.label.slice(i + 2);
-                            return (
-                              <>
-                                <Text>{before}</Text>
-                                <Text style={styles.meisouStrike}>{meisou}</Text>
-                                <Text>{after}</Text>
-                              </>
-                            );
-                          })()
-                        : config.label}
+                      {config.label}
                     </Text>
                     <Text style={[styles.recordStatsValue, { color: textMuted, fontSize: typography.subhead.fontSize }]}>{value}</Text>
                   </View>

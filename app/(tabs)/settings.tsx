@@ -83,7 +83,7 @@ function createSettingsStyles(
     reminderRowRight: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: spacing.md },
     reminderDeleteButton: { padding: spacing.xs },
     reminderTimeWrap: { flex: 1 as const, justifyContent: 'center' as const },
-    reminderTime: { fontSize: typography.subhead.fontSize, fontWeight: '600' as const },
+    reminderTime: { fontSize: typography.subhead.fontSize * 1.3, fontWeight: '600' as const },
     reminderNotificationInputRow: { paddingVertical: spacing.sm, paddingHorizontal: spacing.lg, borderRadius: borderRadius.md, borderWidth: 1, marginBottom: spacing.sm },
     reminderNotificationLabel: { fontSize: typography.label.fontSize, fontWeight: '600' as const, marginBottom: spacing.xs },
     reminderNotificationInput: { fontSize: typography.body.fontSize, paddingVertical: spacing.xs },

@@ -70,6 +70,7 @@ export default function ProfileEditNameScreen() {
   const textMuted = useThemeColor({}, 'textMuted');
   const borderColor = useThemeColor({}, 'border');
   const backgroundColor = useThemeColor({}, 'background');
+  const accentColor = useThemeColor({}, 'accent');
 
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(true);
@@ -121,7 +122,7 @@ export default function ProfileEditNameScreen() {
           onPress={handleSave}
           style={({ pressed }) => [
             styles.saveButton,
-            { backgroundColor: '#E65100' },
+            { backgroundColor: accentColor },
             pressed && { opacity: 0.9 },
           ]}>
           <Text style={[styles.saveButtonText, { fontSize: typography.subhead.fontSize }]}>保存</Text>
