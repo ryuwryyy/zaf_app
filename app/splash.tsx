@@ -120,9 +120,6 @@ export default function SplashScreen() {
             paddingHorizontal: spacing.xl,
           },
         ]}>
-        {/* Red note: upper portion, over the background */}
-        <Text style={styles.designNote}>背景が動画になります</Text>
-
         {/* Center: Z A F + ZEN IN THE LIFE */}
         <View style={styles.center}>
           <Text style={styles.hero}>Z A F</Text>

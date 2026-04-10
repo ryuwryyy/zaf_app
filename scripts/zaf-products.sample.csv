@@ -1,0 +1,5 @@
+id,title,description,imageUrl,enabled,sortOrder
+product-1,ZAF Product 1,瞑想とマインドフルネスをサポートする商品です。,https://example.com/product1.jpg,true,1
+product-2,ZAF Product 2,心地よい音や香りで瞑想環境を整えましょう。,https://example.com/product2.jpg,true,2
+product-3,ZAF Product 3,瞑想の記録や習慣づけをサポートするツールです。,https://example.com/product3.jpg,true,3
+product-4,ZAF Product 4,より深い瞑想体験のためのおすすめアイテムです。,https://example.com/product4.jpg,true,4

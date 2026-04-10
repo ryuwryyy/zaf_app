@@ -1,0 +1,18 @@
+[
+  {
+    "id": "product-1",
+    "title": "ZAF Product 1",
+    "description": "瞑想とマインドフルネスをサポートする商品です。",
+    "imageUrl": "https://example.com/product1.jpg",
+    "enabled": true,
+    "sortOrder": 1
+  },
+  {
+    "id": "product-2",
+    "title": "ZAF Product 2",
+    "description": "心地よい音や香りで瞑想環境を整えましょう。",
+    "imageUrl": "https://example.com/product2.jpg",
+    "enabled": true,
+    "sortOrder": 2
+  }
+]

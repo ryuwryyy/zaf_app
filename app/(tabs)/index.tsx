@@ -1,7 +1,7 @@
 import type { ScaledBorderRadius, ScaledSpacing, ScaledTypography } from '@/constants/responsive';
 import { Colors } from '@/constants/theme';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Image,
   Platform,
@@ -18,6 +18,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useEffectiveColorScheme } from '@/contexts/ThemePreferenceContext';
 import { useResponsive } from '@/hooks/use-responsive';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { getTodaysQuote } from '@/lib/quotes';
 import {
   getDailyMeditationTargetMinutes,
   getGoalDays,
@@ -139,6 +140,20 @@ export default function HomeScreen() {
   const [progressTotal, setProgressTotal] = useState(DEFAULT_PROGRESS_TOTAL);
   const [todayMinutes, setTodayMinutes] = useState(0);
   const [dailyTargetMinutes, setDailyTargetMinutes] = useState(10);
+  const [quoteText, setQuoteText] = useState(
+    '今あるものに満たされない者は\nこれから欲しいものにも満たされない',
+  );
+  const [quoteAttribution, setQuoteAttribution] = useState('ソクラテス(古代ギリシャの哲学者)');
+  const [lastQuoteRefreshWindow, setLastQuoteRefreshWindow] = useState('');
+
+  const refreshQuote = useCallback(async () => {
+    const quote = await getTodaysQuote();
+    setQuoteText(quote.text);
+    setQuoteAttribution(quote.attribution);
+    const now = new Date();
+    const key = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}-${now.getHours()}-${Math.floor(now.getMinutes() / 15)}`;
+    setLastQuoteRefreshWindow(key);
+  }, []);
 
   /** Refetch goal, daily target, and sessions whenever Home gains focus. Progress = days where total meditation >= target. */
   useFocusEffect(
@@ -150,6 +165,7 @@ export default function HomeScreen() {
           getDailyMeditationTargetMinutes(),
           getSessions(),
         ]);
+        const quote = await getTodaysQuote();
         if (cancelled) return;
         const completedDays = getProgressDaysCount(sessions, targetMinutes);
         const todayISO = new Date().toISOString().slice(0, 10);
@@ -158,12 +174,25 @@ export default function HomeScreen() {
         setProgressTotal(Math.max(1, goalDays));
         setProgressDays(Math.min(completedDays, Math.max(1, goalDays)));
         setTodayMinutes(todayTotal);
+        setQuoteText(quote.text);
+        setQuoteAttribution(quote.attribution);
       })();
       return () => {
         cancelled = true;
       };
     }, [])
   );
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      const key = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}-${now.getHours()}-${Math.floor(now.getMinutes() / 15)}`;
+      if (key !== lastQuoteRefreshWindow) {
+        refreshQuote();
+      }
+    }, 30 * 1000);
+    return () => clearInterval(interval);
+  }, [lastQuoteRefreshWindow, refreshQuote]);
 
   const displayDays = PREVIEW_PROGRESS ? PREVIEW_DAYS : progressDays;
   const displayTotal = PREVIEW_PROGRESS ? PREVIEW_TOTAL : progressTotal;
@@ -319,13 +348,12 @@ export default function HomeScreen() {
         <View style={[styles.section, { marginTop: spacing.xl, marginBottom: spacing.xxl }]}>
           <Text style={[styles.sectionTitle, { color: textColor }]}>今日の気づき</Text>
           <Text style={[styles.quoteText, { color: textMuted }]}>
-            今あるものに満たされない者は{'\n'}
-            これから欲しいものにも満たされない
+            {quoteText}
           </Text>
           <View style={styles.quoteAttributionRow}>
             <View style={[styles.quoteDashLine, { backgroundColor: textMuted }]} />
             <Text style={[styles.quoteAttribution, { color: textMuted }]}>
-              ソクラテス(古代ギリシャの哲学者)
+              {quoteAttribution}
             </Text>
           </View>
         </View>

@@ -1,0 +1,32 @@
+// Paste into Firebase Console → Firestore → Rules (or deploy via Firebase CLI).
+// Adjust collection names if your project differs.
+// Backend scripts use Admin SDK and ignore these rules.
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /quotes/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /zaf_products/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // App upserts token doc id == token string; no user auth in this app model.
+    match /push_tokens/{tokenId} {
+      allow read: if false;
+      allow create, update: if request.resource.data.token == tokenId
+        && request.resource.data.keys().hasAll(['token', 'platform', 'appVersion']);
+      allow delete: if false;
+    }
+
+    // Only Admin SDK / Console should touch campaigns.
+    match /campaigns/{docId} {
+      allow read, write: if false;
+    }
+  }
+}

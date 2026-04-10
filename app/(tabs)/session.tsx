@@ -67,8 +67,7 @@ const GUIDANCE_VIDEOS = [
   { tag: '【ビギナー向け】', title: '座禅のいろは', duration: '12分' },
 ];
 
-const GUIDANCE_EXPLANATION =
-  'ガイダンスの動画は瞑想のアカウトの\n回数と時間に含めるものとそうでない\nものを設定できるように。\n例えば動画30分の内、\nガイダンスが10分+瞑想20分の場合は\n  20分のみ時間を反映する';
+const GUIDANCE_EXPLANATION = '';
 
 function createSessionStyles(
   spacing: ScaledSpacing,

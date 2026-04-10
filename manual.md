@@ -9,8 +9,8 @@
 
 | 項目 | 内容 |
 |------|------|
-| **運用時にやる操作** | 商品テキスト・画像の差し替え、名言の変更、リマインダー文言の変更、キャンペーン通知の送り方 |
-| **変更してよいもの** | ZAF商品のタイトル・説明・画像、今日の気づき（名言）、リマインダー通知のデフォルト文言（コード内） |
+| **運用時にやる操作** | Firestore の `quotes` / `zaf_products` / `campaigns` 更新、リマインダー文言の変更、キャンペーン送信 |
+| **変更してよいもの** | Firestore データ（`quotes`、`zaf_products`、`campaigns`）、リマインダー通知のデフォルト文言（コード内） |
 | **変更してはいけないもの** | 設定ファイル（app.json など）、鍵ファイル、ストレージのキー名、レイアウト用のコード |
 
 不明な点は開発者に確認してください。
@@ -28,6 +28,8 @@
 7. [変更してよい項目・してはいけない項目の一覧](#7-変更してよい項目してはいけない項目の一覧)
 8. [関連するWebページのURL](#8-関連するwebページのurl)
 9. [Excel 等で管理しているデータの連携](#9-excel-等で管理しているデータの連携)
+10. [Firestore 一括インポート手順（運用向け）](#10-firestore-一括インポート手順運用向け)
+11. [キャンペーン送信の自動化とログ（Windows）](#11-キャンペーン送信の自動化とログwindows)
 
 ---
 
@@ -45,8 +47,14 @@
 ### 1.2 運用時の大前提
 
 - 表示テキストや画像は、**指定したファイルだけ**を編集すると変更できます。
-- ユーザーの設定や履歴は、今は**端末の中**に保存されています（Firestore などのサーバーDBは使っていません）。
+- ユーザー設定や履歴の一部は端末内に保存され、コンテンツ（`quotes`、`zaf_products`）と通知運用データ（`push_tokens`、`campaigns`）は Firestore を使用します。
 - ファイルを保存しただけでは、**すでにインストールされているアプリ**には反映されません。**アプリの再ビルド**（または開発中の場合は画面の再読み込み）が必要です。
+
+### 1.3 秘密情報（トークン・鍵）の扱い（必読）
+
+- **Git にコミットしないもの:** サービスアカウント JSON、`EXPO_ACCESS_TOKEN`、`.env` に書いた秘密値。リポジトリには **`.env.example`**（中身は空の例だけ）を置き、実値は各人の PC または CI の秘密管理に置きます。
+- **推奨:** 送信 PC では環境変数 **`GOOGLE_APPLICATION_CREDENTIALS`** に「鍵 JSON のファイルパス」を設定する（鍵をリポジトリ直下に置かない運用も可能）。CI では **`FIREBASE_SERVICE_ACCOUNT_JSON`**（JSON 文字列）が使えます。
+- **Firestore ルール:** 本番では **`quotes` / `zaf_products` は読み取りのみ**、`push_tokens` は端末からの upsert のみ、`campaigns` はコンソール・Admin のみ、が安全です。雛形は **`docs/firestore.rules.production.example`** を Firebase Console の Rules にコピーして調整してください。
 
 ---
 
@@ -275,7 +283,7 @@
 
 **ファイル:** `app/zaf-product.tsx`
 
-設定画面の「ZAF PRODUCTS」のカードをタップすると開く画面です。商品画像、タイトル、説明文が表示されます。表示内容は `app/zaf-product.tsx` の `PRODUCTS` と `assets/images/01.png` で変更できます（本マニュアルの「3. ZAF商品の画像・テキストの変更」参照）。
+設定画面の「ZAF PRODUCTS」のカードをタップすると開く画面です。商品画像、タイトル、説明文は Firestore の `zaf_products` から表示されます。
 
 **主な要素:** 「戻る」、タイトル「ZAF PRODUCTS」、商品画像、商品名、説明文。
 
@@ -299,7 +307,7 @@
 | 2.12～2.14 | 名前・アイコン・カラー設定 | `profile-edit-*.tsx` | プロフィール編集 |
 | 2.15 | 目標詳細 | `goal-detail.tsx` | 詳しく見る |
 | 2.16 | 瞑想の取り組み方 | `meditation-purpose.tsx` | 目的別ヒント |
-| 2.17 | ZAF 商品詳細 | `zaf-product.tsx` | 商品 1～4 の詳細 |
+| 2.17 | ZAF 商品詳細 | `zaf-product.tsx` | Firestore の商品詳細を表示 |
 
 **スクリーンショットのファイル名と画面の対応（`assets/screenshots` フォルダ）**
 
@@ -328,152 +336,146 @@
 
 ## 3. ZAF商品の画像・テキストの変更
 
-ZAF商品は、アプリの **SETTING（設定）** 画面の「ZAF PRODUCTS」に表示されます。タップすると商品詳細画面が開きます。
+ZAF商品は Firestore の **`zaf_products`** コレクションから表示されます。  
+アプリ側で `enabled=true` の商品だけ表示され、`imageUrl` が空なら既定画像を使います。
 
-### 3.1 商品のテキスト（タイトル・説明文）を変える
+### 3.1 商品データを変更する（推奨：CSV 一括インポート）
 
-**変更してよいもの：** 商品名（タイトル）と説明文だけです。  
-**変更してはいけないもの：** `'1'` ～ `'4'` の番号、`title` や `description` という単語、括弧 `{ }` やカンマ `,` の並び。
-
-#### 手順（ステップ）
-
-1. **プロジェクトフォルダを開く**  
-   パソコンで、アプリのプロジェクトが入っているフォルダ（例: `odza`）を開きます。
-
-2. **ファイルを開く**  
-   - フォルダ一覧で **`app`** を開く  
-   - その中にある **`zaf-product.tsx`** を、テキストエディタ（メモ帳、VS Code、Cursor など）で開きます。
-
-   > **[スクリーンショット用]**  
-   > 撮影内容: エクスプローラー（または Finder）で `app` フォルダを開き、`zaf-product.tsx` が一覧に表示されている様子。
-
-3. **編集する場所を探す**  
-   ファイルの**上から 15 行目あたり**に、次のようなブロックがあります。
-
-   ```javascript
-   const PRODUCTS: Record<string, { title: string; description: string }> = {
-     '1': { title: 'ZAF Product 1', description: '瞑想とマインドフルネスを…' },
-     '2': { title: 'ZAF Product 2', description: '心地よい音や香りで…' },
-     …
-   };
-   ```
-
-   > **[スクリーンショット用]**  
-   > 撮影内容: エディタで `zaf-product.tsx` を開き、上記の `PRODUCTS` の部分が画面に表示されている様子。行番号が分かるとよいです。
-
-4. **テキストだけを書き換える**  
-   - **商品名を変える** … 各 `title: 'ここ'` の **'ここ'** の部分だけを変更します。  
-   - **説明文を変える** … 各 `description: 'ここ'` の **'ここ'** の部分だけを変更します。  
-   - 改行を入れたい場合は、`\n` を説明文の中に書きます（例: `'1行目\n2行目'`）。  
-   - **注意:** 引用符 `'` や括弧 `{ }`、カンマ `,` を消したり増やしたりしないでください。エラーの原因になります。
-
-5. **保存する**  
-   編集したあと、ファイルを**保存**します（Ctrl+S または Cmd+S）。
-
-6. **反映の確認**  
-   開発中の場合はアプリ画面を再読み込み、本番の場合は**アプリを再ビルド**して配布すると、変更が反映されます。
-
----
-
-### 3.2 商品画像を変える
-
-**変更してよいもの：** 画像ファイル `01.png` の中身（画像そのもの）だけです。  
-**変更してはいけないもの：** ファイル名 `01.png`。また、コード内の `01.png` という文字列を不用意に変えないでください。
-
-現在、**4つすべての商品**で**同じ 1 枚の画像**が使われています。画像を差し替えると、設定画面の一覧と商品詳細の両方で変わります。
+**変更してよいもの：** `zaf_products` の `title`、`description`、`imageUrl`、`enabled`、`sortOrder`  
+**変更してはいけないもの：** コレクション名、鍵ファイル名、運用スクリプト本体
 
 #### 手順（ステップ）
 
-1. **新しい画像を用意する**  
-   - 形式: **PNG** または **JPG** 推奨  
-   - 使うファイル名: **`01.png`**  
-   - 既存の `01.png` は、別名でコピーしてバックアップしておくと安全です。
+1. `scripts/zaf-products.sample.csv` を Excel で開く  
+2. 必要な行を編集（列順は変更しない）  
+3. PowerShell でプロジェクトフォルダを開く  
+4. 置き換え登録コマンドを実行
 
-2. **プロジェクト内の画像の場所を開く**  
-   - プロジェクトフォルダ → **`assets`** → **`images`** を開きます。  
-   - 中に **`01.png`** があります。
+```bash
+npm run import-zaf-products -- --file scripts/zaf-products.sample.csv
+```
 
-   > **[スクリーンショット用]**  
-   > 撮影内容: エクスプローラー（または Finder）で `assets/images` を開き、`01.png` が表示されている様子。
+5. Firebase Console の `zaf_products` を確認  
+6. アプリ再読み込み後、SETTING と商品詳細画面を確認
 
-3. **画像を差し替える**  
-   - 用意した新しい画像を、**ファイル名 `01.png` のまま**、`assets/images` フォルダにコピーします。  
-   - 既存の `01.png` を**上書き**する形で置き換えます。
+### 3.2 既存データを残して追記・更新したい場合
 
-4. **反映の確認**  
-   アプリを再ビルド（または開発中なら再読み込み）すると、設定画面と商品詳細の両方で新しい画像が表示されます。
-
-**商品ごとに別の画像にしたい場合**  
-今の仕様では 1 枚共通のため、商品ごとに画像を分けるには**コードの修正**が必要です。開発者に「商品 1～4 でそれぞれ別の画像にしたい」と依頼してください。
+```bash
+npm run import-zaf-products -- --file scripts/zaf-products.sample.csv --merge
+```
 
 ---
 
 ## 4. 名言（今日の気づき）の追加・変更
 
-ホーム画面の **「今日の気づき」** に表示される名言を変更します。
+ホーム画面の **「今日の気づき」** は Firestore の `quotes` から表示されます。  
+現在は **15分ごとに動的にローテーション**し、同じ名言が連続しにくい仕様です。
 
-**変更してよいもの：** 名言の本文と、出典・著者名のテキストだけです。  
-**変更してはいけないもの：** `<Text>` や `style=` などのタグ・コード。それらは触らず、**中身の日本語（または英語）の文字列だけ**を書き換えます。
+### 4.1 名言データを変更する（推奨：CSV 一括インポート）
 
-#### 手順（ステップ）
+1. `scripts/quotes.sample.csv` を Excel で開く  
+2. 列 `id,text,author,profession,enabled` を編集  
+3. 置き換え登録コマンドを実行
 
-1. **プロジェクトフォルダを開く**
+```bash
+npm run import-quotes -- --file scripts/quotes.sample.csv
+```
 
-2. **ファイルを開く**  
-   - **`app`** フォルダ → **`(tabs)`** フォルダ を開く  
-   - その中の **`index.tsx`** をエディタで開きます。
+4. Firebase Console の `quotes` を確認  
+5. アプリ再読み込みで表示確認（最大15分で切り替わり）
 
-3. **編集する場所を探す**  
-   ファイルの**おおよそ 318 行目あたり**に、「今日の気づき」のセクションがあります。  
-   - **名言の本文** … `今あるものに満たされない者は…` の部分  
-   - **出典・著者名** … `ソクラテス(古代ギリシャの哲学者)` の部分  
+### 4.2 既存データを残して追記・更新したい場合
 
-   > **[スクリーンショット用]**  
-   > 撮影内容: エディタで `index.tsx` を開き、318 行目付近の「今日の気づき」のコードが表示されている様子。
-
-4. **テキストだけを書き換える**  
-   - 名言の本文を変える … 引用符 `'...'` の中の文字だけを変更。改行は `{'\n'}` を使います。  
-   - 出典を変える … 「ソクラテス(…)」と書いてある部分の文字だけを変更します。
-
-5. **保存**して、アプリを再ビルド（または再読み込み）すると反映されます。
-
-**複数の名言を日替わりで表示したい場合**  
-日付に応じて違う名言を出すには、コードの追加が必要です。開発者に「名言リストと日付で選ぶ仕様にしたい」と依頼してください。
+```bash
+npm run import-quotes -- --file scripts/quotes.sample.csv --merge
+```
 
 ---
 
 ## 5. キャンペーン・プッシュ通知の設定
 
-アプリでは **Expo Push** を使ってプッシュ通知を送信しています。  
-Firestore は使っておらず、送信は **Expo のサービス（Web または API）** 経由で行います。
+アプリでは **Firestore + Expo Push API** で通知を送信します。  
+運用は Firestore の `campaigns` を **`status: "pending"`** にし、PC 上の送信スクリプトが Expo に渡し、その後 **レシート（配信結果）** を確認して Firestore に記録する方式です。
 
 ### 5.1 プッシュ通知を送る流れ（やさしく）
 
 1. ユーザーがアプリを起動すると、端末ごとの **トークン**（通知を送るための識別子）がアプリ内に保存されます。  
-2. キャンペーンなどで通知を送りたいときは、そのトークンを使って、Expo のサービスに「この端末に通知を送って」と依頼します。  
-3. 実際の送信は、**Expo の Web ページ（ダッシュボード）** から行うか、**送信用のツール**を開発者に作ってもらう形になります。
+2. 端末トークンは Firestore の **`push_tokens`** に保存されます。  
+3. 運用担当が `campaigns` に **pending** のドキュメントを作り、`npm run send-campaigns` を実行します。  
+4. スクリプトはまず Expo に **チケット（受付結果）** を送り、続けて **getReceipts** で FCM/APNs までの結果を取得します（時間がかかる分は数回ポーリングします）。  
+5. 端末で通知が見えるかは OS・ネットワーク次第です。**「端末に表示された」ことの厳密な保証はレシートでも 100% ではありません**が、運用上は `deliveryOutcome` が最も信頼できる指標です。
 
-### 5.2 手順（Expo の Web から送る場合）
+### 5.2 非エンジニア向けチェックリスト（毎回この順）
 
-1. **Expo にログインする**  
-   - ブラウザで Expo のサイトを開き、このプロジェクトにアクセスできるアカウントでログインします。  
-   - 参考URL: [Expo の通知ページ](https://expo.dev/notifications)（下記「関連するWebページのURL」も参照）。
+1. **Firebase Console → Firestore → `campaigns`** でドキュメントを追加（または複製して編集）  
+   - 必須イメージ: `title`（通知タイトル）, `body`（本文）, **`status`: `"pending"`**  
+   - すぐ送らず予約したい場合: **`scheduledAt`** に **タイムスタンプ**（送信時刻より前は送られません）  
+   - 任意: `data`（アプリ側で使う追加データオブジェクト）
+2. **送信する PC** で Node.js が使えることを確認し、プロジェクトフォルダ（`odza`）を開く。  
+3. **環境変数**（PowerShell の例）  
+   - `EXPO_ACCESS_TOKEN` … Expo のアクセストークン（本番運用では設定推奨）  
+   - `GOOGLE_APPLICATION_CREDENTIALS` … サービスアカウント JSON の**フルパス**（推奨）  
+   - または鍵を `google-service-account-key.json` としてリポジトリ直下に置く（**Git に上げない**）
+4. 送信実行:
 
-2. **送信先のトークンを用意する**  
-   - 通知を送りたい端末の **Expo Push トークン** が必要です。  
-   - トークンはアプリ側で自動保存されていますが、**画面上には表示されません**。  
-   - テスト用にトークンを確認したい場合は、開発者に「トークンを一時的に画面に表示する」ように依頼できます。
+```bash
+npm run send-campaigns
+```
 
-3. **タイトルと本文を入力して送信**  
-   - Expo のダッシュボード（または Push 用の画面）で、**送信先トークン**・**タイトル**・**本文**を入力し、送信します。  
-   - 通知をタップしたときに開く画面を指定したい場合は、**data** に `screen` や `url` を入れます（詳細は開発者または `docs/push-notifications.md` 参照）。
+5. **同じドキュメントを開き直し**、次を確認する:  
+   - **`status`**: Expo への **受付** 結果（`sent` / `partially_sent` / `failed`）  
+   - **`deliveryOutcome`**: **レシートに基づく配信結果**（下表）  
+   - **`receiptPendingCount`**: まだレシートが返っていない件数。Expo の都合で遅れることがあります。  
+6. 実機で通知を確認（エミュレータは不安定なことが多いです）。
 
-   > **[スクリーンショット用]**  
-   > 撮影内容: Expo の通知送信画面（または Expo Push Tool の画面）で、タイトル・本文・送信先を入力している様子。  
-   > URL: https://expo.dev/notifications
+### 5.3 `campaigns` に載る主なフィールド（送信後）
 
-**Excel で送信リストを管理して一括送信したい場合**  
-その場合は、Excel を読み込んで Expo の API を呼ぶ**小さなツール**を開発者に作ってもらう必要があります。どの項目を Excel で持ち、誰がいつツールを実行するかは、運用ルールとして決めたうえで開発者に伝えてください。
+| フィールド | 意味（やさしく） |
+|-----------|------------------|
+| `status` | Expo が **リクエストを受け付けたか**（チケット段階）。`sent` でも端末未着の可能性があります。 |
+| `sentCount` | チケットが `ok` だった件数（宛先トークン単位） |
+| `errorCount` | チケットが `error` だった件数 |
+| `receiptOkCount` | レシートで **FCM/APNs まで届いた** と判定された件数 |
+| `receiptErrorCount` | レシートでエラーだった件数（無効トークンなど） |
+| `receiptPendingCount` | ポーリング終了時点で **レシート未取得** のチケット数 |
+| `deliveryOutcome` | まとめ判定（下表） |
+| `invalidTokenCount` | 削除した無効トークン数（チケット＋レシートの `DeviceNotRegistered` 等） |
+| `receiptCheckedAt` | レシート確認を終えた時刻 |
+| `lastError` | 調査用の短いメッセージ（エラー時） |
+
+**`deliveryOutcome` の値**
+
+| 値 | 意味 |
+|----|------|
+| `delivered` | 受付できたチケットはすべてレシート `ok`（プロバイダまで到達） |
+| `partially_delivered` | 成功と失敗が混在 |
+| `failed` | 受付はできたがレシートは主にエラー |
+| `receipts_pending` | タイムアウト時点でレシートがまだ足りない（必要なら `EXPO_RECEIPT_MAX_WAIT_MS` を延ばす・後から再実行方針を開発者と決める） |
+| `submission_failed` | Expo 受付段階で送れるチケットがなかった |
+| `unknown` | 想定外（ログを開発者に共有） |
+
+### 5.4 ログファイル・レシート待ち時間（任意設定）
+
+- **ログをファイルに残す:** `CAMPAIGN_LOG_FILE` を設定するか、次を実行すると既定で `logs/campaign-run.log` に追記されます。
+
+```bash
+npm run send-campaigns:log
+```
+
+- **レシート待ち:** 既定は約 **2 分**（`EXPO_RECEIPT_POLL_INTERVAL_MS` / `EXPO_RECEIPT_MAX_WAIT_MS` で変更）。Expo のドキュメントでは最大 **15 分** 待つ例も紹介されています。詳細は **`docs/campaign-scheduling-windows.md`** も参照してください。
+
+### 5.5 環境変数の一覧（`.env.example` と同じ内容の目安）
+
+プロジェクト直下の **`.env`** に書いた値は、**`npm run send-campaigns`**（および **`send-campaigns:log`**）実行時にスクリプトが自動で読み込みます（シェルで別途 `export` しなくても構いません）。
+
+| 変数名 | 用途 |
+|--------|------|
+| `EXPO_ACCESS_TOKEN` | Expo Push API 利用時の認証（推奨） |
+| `GOOGLE_APPLICATION_CREDENTIALS` | サービスアカウント JSON のパス |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | CI 等向けに JSON を文字列で渡す場合 |
+| `CAMPAIGN_LOG_FILE` | ログ追記先パス（例: `logs/campaign-run.log`） |
+| `EXPO_RECEIPT_POLL_INTERVAL_MS` | レシート再取得の間隔（ミリ秒） |
+| `EXPO_RECEIPT_MAX_WAIT_MS` | レシート待ちのおおよその上限（ミリ秒） |
 
 ---
 
@@ -509,9 +511,9 @@ Firestore は使っておらず、送信は **Expo のサービス（Web また�
 
 | やりたいこと | 編集するファイル・場所 | 備考 |
 |-------------|------------------------|------|
-| ZAF商品のタイトル・説明 | `app/zaf-product.tsx` の `PRODUCTS`（15 行目付近） | 引用符・括弧・カンマは触らない |
-| ZAF商品の画像 | `assets/images/01.png` を別画像で**上書き** | ファイル名は `01.png` のまま |
-| 今日の気づき（名言） | `app/(tabs)/index.tsx` の「今日の気づき」セクション（318 行目付近） | タグは触らず、文字列だけ |
+| ZAF商品のタイトル・説明・画像URL | Firestore `zaf_products` / `npm run import-zaf-products` | `enabled` で表示制御 |
+| 今日の気づき（名言） | Firestore `quotes` / `npm run import-quotes` | 15分ごとローテーション |
+| キャンペーン通知の送信 | Firestore `campaigns`（`pending`）＋ PC で `npm run send-campaigns` | `deliveryOutcome` で配信結果を確認 |
 | リマインダー通知のデフォルト文言 | `lib/reminder-notifications.ts`、`lib/background.ts`、`app/(tabs)/settings.tsx` の該当定数・プレースホルダー | 定数名は変えない |
 
 ### 7.2 変更してはいけない項目
@@ -521,11 +523,11 @@ Firestore は使っておらず、送信は **Expo のサービス（Web また�
 | 種類 | 例 | 理由 |
 |------|-----|------|
 | 設定ファイル | `app.json`、`package.json`、`eas.json`、`tsconfig.json` | ビルドやパッケージ名の設定 |
-| 認証・鍵 | `google-services.json`、`google-service-account-key.json` | 削除・書き換えでプッシュが届かなくなる |
+| 認証・鍵 | `google-services.json`、サービスアカウント JSON（リポジトリ外＋`GOOGLE_APPLICATION_CREDENTIALS` 推奨） | 漏洩・削除・書き換えでプッシュが届かなくなる |
 | レイアウト・起動処理 | `app/_layout.tsx`、`app/(tabs)/_layout.tsx` | 画面構成や通知の初期設定 |
 | ストレージのキー名 | `lib/storage.ts` の `@zaf/` や各キー名 | 変えると既存データが読めなくなる |
 
-**安全に変更するコツ:** このマニュアルで案内している「ZAF商品」「今日の気づき」「リマインダー文言」の**該当ファイルの該当箇所だけ**を編集し、それ以外のファイルや、上記の「変更してはいけない項目」には触らないようにしてください。
+**安全に変更するコツ:** 日々の運用は Firestore データ更新（またはインポートコマンド）を使い、アプリコードの直接編集は最小限にしてください。
 
 ---
 
@@ -548,25 +550,108 @@ Firestore は使っておらず、送信は **Expo のサービス（Web また�
 |----------|------|
 | `README.md` | プロジェクトの起動方法、Android/iOS ビルド、プッシュの仕組み、ビジネスロジック（開発者向け・日本語） |
 | `docs/push-notifications.md` | プッシュ通知の実装詳細・送信例（英語） |
+| `docs/campaign-scheduling-windows.md` | Windows でのログ付き実行・タスクスケジューラ設定 |
+| `docs/firestore.rules.production.example` | 本番向け Firestore セキュリティルールの雛形 |
+| `.env.example` | 送信スクリプト用の環境変数テンプレート（秘密は書かない） |
 
 ---
 
 ## 9. Excel 等で管理しているデータの連携
 
-アプリは **Excel を直接読み込む機能**は持っていません。
+アプリ本体は **Excel を直接読み込む機能**は持っていませんが、CSV インポートスクリプトで Firestore を更新できます。
 
-- **名言・商品テキストなどを Excel で一覧管理したい**  
-  → その内容をコードや画像に**手作業で反映**するか、開発者に「Excel の内容をアプリ用に変換するツール」の作成を依頼してください。  
-- **キャンペーン通知の送信先・日時を Excel で管理したい**  
-  → 送信は Expo Push のトークンと API で行うため、Excel を読み込んで API を呼ぶ**小さなツール**を開発者に作ってもらう必要があります。  
-  どの項目を Excel で持ち、誰がいつツールを実行するかは、運用ルールとして決めたうえで開発者に伝えてください。
+- **名言・商品データを Excel で管理したい**  
+  → Excel で編集後に CSV 保存し、以下で反映します。  
+  - `npm run import-quotes -- --file <quotes.csv>`  
+  - `npm run import-zaf-products -- --file <products.csv>`
+- **キャンペーン通知を運用したい**  
+  → Firestore `campaigns` に pending データを作成し、`npm run send-campaigns` を実行します。
+
+---
+
+## 10. Firestore 一括インポート手順（運用向け）
+
+このプロジェクトには、**名言（quotes）** と **ZAF商品（zaf_products）** を Firestore に一括登録するためのコマンドが用意されています。  
+Excel で管理した内容を CSV に保存して読み込む運用が可能です。
+
+### 10.1 事前準備
+
+1. プロジェクトフォルダ（`odza`）を開く  
+2. PowerShell またはターミナルを開く  
+3. **Firestore 書き込み用の認証**（どちらか）  
+   - 推奨: 環境変数 **`GOOGLE_APPLICATION_CREDENTIALS`** にサービスアカウント JSON のパスを設定  
+   - または: 鍵ファイルを **`google-service-account-key.json`** としてリポジトリ直下に置く（**Git にコミットしない**）  
+4. 以下のサンプルがあることを確認  
+   - `scripts/quotes.sample.csv`
+   - `scripts/zaf-products.sample.csv`
+
+### 10.2 名言（quotes）を一括登録する
+
+#### 置き換え（既存データを消して入れ直し）
+
+```bash
+npm run import-quotes -- --file scripts/quotes.sample.csv
+```
+
+#### 追記・更新（既存データを残してマージ）
+
+```bash
+npm run import-quotes -- --file scripts/quotes.sample.csv --merge
+```
+
+### 10.3 ZAF商品（zaf_products）を一括登録する
+
+#### 置き換え（既存データを消して入れ直し）
+
+```bash
+npm run import-zaf-products -- --file scripts/zaf-products.sample.csv
+```
+
+#### 追記・更新（既存データを残してマージ）
+
+```bash
+npm run import-zaf-products -- --file scripts/zaf-products.sample.csv --merge
+```
+
+### 10.4 CSV の列ルール
+
+#### quotes 用 CSV
+- `id,text,author,profession,enabled`
+
+#### zaf_products 用 CSV
+- `id,title,description,imageUrl,enabled,sortOrder`
+
+### 10.5 インポート後の確認
+
+Firebase Console の Firestore で次を確認します。
+
+- `quotes` コレクションにデータが作成されている
+- `zaf_products` コレクションにデータが作成されている
+- `enabled` が `true` のデータだけがアプリに表示される
+
+### 10.6 よくある注意点
+
+- CSV の 1 行目（ヘッダー）を変更しない  
+- カンマを含む本文は `"` で囲む  
+- 失敗した場合は、鍵ファイルの場所とファイル名を確認する  
+- 本番運用前に必ず少数データでテストしてから実行する
+
+---
+
+## 11. キャンペーン送信の自動化とログ（Windows）
+
+手順の全文は **`docs/campaign-scheduling-windows.md`** にあります。要点だけ:
+
+- **ログ付き実行:** `npm run send-campaigns:log`（既定で `logs/campaign-run.log` に追記）
+- **タスク スケジューラ:** 定期的に `npm run send-campaigns` を実行。環境変数はタスク側で設定するか、同梱の **`.cmd` ラッパー**（秘密を書いたファイルは Git に含めない）で渡す。
+- **失敗確認:** ログの `[ERROR]` と Firestore の `deliveryOutcome` / `receiptPendingCount` を見る。
 
 ---
 
 ## まとめ
 
-- **運用で行う操作:** 商品テキスト・画像の差し替え、名言の変更、リマインダー文言の変更、キャンペーン通知の送信（Expo の Web またはツール利用）。
-- **変更してよいもの:** このマニュアルで案内したファイルの「表示されるテキスト・画像」の部分だけ。
+- **運用で行う操作:** Firestore の `quotes` / `zaf_products` / `campaigns` 更新、リマインダー文言の変更、キャンペーン送信コマンド実行（**`deliveryOutcome` で配信結果を確認**）。
+- **変更してよいもの:** Firestore データと運用用CSV（必要に応じてリマインダー文言のコード）。
 - **変更してはいけないもの:** 設定ファイル、鍵ファイル、ストレージのキー名、レイアウト・起動用のコード。
 - **スクリーンショット:** 文中の「**[スクリーンショット用]**」の部分は、後から画像を差し込む場所です。撮影内容と URL を記載しているので、そのとおりにキャプチャを追加すると、非エンジニアの方が手順を追いやすくなります。
 

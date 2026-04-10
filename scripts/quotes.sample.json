@@ -1,0 +1,16 @@
+[
+  {
+    "id": "quote-socrates-001",
+    "text": "今あるものに満たされない者は\nこれから欲しいものにも満たされない",
+    "author": "ソクラテス",
+    "profession": "古代ギリシャの哲学者",
+    "enabled": true
+  },
+  {
+    "id": "quote-zen-002",
+    "text": "呼吸を整えることは、心を整えること。",
+    "author": "禅語",
+    "profession": "",
+    "enabled": true
+  }
+]

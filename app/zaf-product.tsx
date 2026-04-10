@@ -3,7 +3,7 @@
  * Shown when user taps a product card on Mission Setting. Displays product info (placeholder content).
  */
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -11,13 +11,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import type { ScaledBorderRadius, ScaledSpacing, ScaledTypography } from '@/constants/responsive';
 import { useResponsive } from '@/hooks/use-responsive';
 import { useThemeColor } from '@/hooks/use-theme-color';
-
-const PRODUCTS: Record<string, { title: string; description: string }> = {
-  '1': { title: 'ZAF Product 1', description: '瞑想とマインドフルネスをサポートする商品です。日々の練習にお役立てください。' },
-  '2': { title: 'ZAF Product 2', description: '心地よい音や香りで、瞑想の環境を整えましょう。' },
-  '3': { title: 'ZAF Product 3', description: '瞑想の記録や習慣づけをサポートするツールです。' },
-  '4': { title: 'ZAF Product 4', description: 'より深い瞑想体験のためのアイテムをご紹介しています。' },
-};
+import { getZafProductById, type ZafProduct } from '@/lib/zaf-products';
 
 function createStyles(spacing: ScaledSpacing, typography: ScaledTypography, scaleSize: (n: number) => number, borderRadius: ScaledBorderRadius) {
   return {
@@ -46,17 +40,52 @@ function createStyles(spacing: ScaledSpacing, typography: ScaledTypography, scal
 export default function ZafProductScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const params = useLocalSearchParams<{ id?: string }>();
+  const params = useLocalSearchParams<{ id?: string; title?: string; description?: string; imageUrl?: string }>();
   const id = params.id ?? '1';
-  const product = PRODUCTS[id] ?? PRODUCTS['1'];
   const { spacing, typography, scaleSize, borderRadius } = useResponsive();
   const styles = useMemo(() => createStyles(spacing, typography, scaleSize, borderRadius), [spacing, typography, scaleSize, borderRadius]);
+  const initialProduct = useMemo<ZafProduct | null>(() => {
+    if (!params.title || !params.description) return null;
+    return {
+      id: String(id),
+      title: String(params.title),
+      description: String(params.description),
+      imageUrl: params.imageUrl ? String(params.imageUrl) : undefined,
+      enabled: true,
+      sortOrder: Number.MAX_SAFE_INTEGER,
+    };
+  }, [id, params.description, params.imageUrl, params.title]);
+  const [product, setProduct] = useState<ZafProduct | null>(initialProduct);
+  const [isLoading, setIsLoading] = useState(!initialProduct);
+  const [imageFailed, setImageFailed] = useState(false);
+
+  useEffect(() => {
+    setProduct(initialProduct);
+    setIsLoading(!initialProduct);
+    setImageFailed(false);
+  }, [initialProduct]);
 
   const textColor = useThemeColor({}, 'text');
   const textMuted = useThemeColor({}, 'textMuted');
   const borderColor = useThemeColor({}, 'border');
   const backgroundColor = useThemeColor({}, 'background');
   const surfaceColor = useThemeColor({}, 'surface');
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setIsLoading(true);
+      const next = await getZafProductById(String(id));
+      if (!cancelled) {
+        setProduct(next);
+        setImageFailed(false);
+        setIsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
 
   return (
     <View style={[styles.screen, { backgroundColor, paddingTop: insets.top + spacing.xl }]}>
@@ -80,14 +109,25 @@ export default function ZafProductScreen() {
         ]}
         showsVerticalScrollIndicator={false}>
         <View style={[styles.imageWrap, { backgroundColor: surfaceColor, borderColor }]}>
-          <Image
-            source={require('@/assets/images/01.png')}
-            style={styles.productImage}
-            resizeMode="cover"
-          />
+          {isLoading && !product ? (
+            <View style={[styles.productImage, { backgroundColor: borderColor }]} />
+          ) : (
+            <Image
+              source={
+                product?.imageUrl && !imageFailed
+                  ? { uri: product.imageUrl }
+                  : require('@/assets/images/01.png')
+              }
+              style={styles.productImage}
+              resizeMode="cover"
+              onError={() => setImageFailed(true)}
+            />
+          )}
         </View>
-        <Text style={[styles.productTitle, { color: textColor }]}>{product.title}</Text>
-        <Text style={[styles.productDescription, { color: textMuted }]}>{product.description}</Text>
+        <Text style={[styles.productTitle, { color: textColor }]}>{product?.title ?? 'ZAF Product'}</Text>
+        <Text style={[styles.productDescription, { color: textMuted }]}>
+          {product?.description ?? 'Product details are not available yet.'}
+        </Text>
       </ScrollView>
     </View>
   );

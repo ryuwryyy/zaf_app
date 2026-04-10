@@ -6,8 +6,30 @@
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
+import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
+
+import { db } from '@/lib/firebase';
 
 const PUSH_TOKEN_KEY = '@zaf/expo_push_token';
+
+async function syncPushTokenToFirestore(token: string): Promise<void> {
+  try {
+    const appVersion = Constants.expoConfig?.version ?? '1.0.0';
+    const platform = Platform.OS === 'ios' || Platform.OS === 'android' ? Platform.OS : 'unknown';
+    await setDoc(
+      doc(db, 'push_tokens', token),
+      {
+        token,
+        platform,
+        appVersion,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
+    );
+  } catch (e) {
+    console.warn('[Push] Failed to sync token to Firestore:', e);
+  }
+}
 
 /** Get EAS project ID from app config (required for Expo Push Token). */
 function getProjectId(): string | null {
@@ -54,6 +76,7 @@ export async function registerForPushNotificationsAsync(): Promise<string | null
     const token = tokenResult?.data ?? null;
     if (token) {
       await AsyncStorage.setItem(PUSH_TOKEN_KEY, token);
+      await syncPushTokenToFirestore(token);
     }
     return token;
   } catch (e) {

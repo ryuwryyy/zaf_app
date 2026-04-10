@@ -31,8 +31,17 @@ yarn-error.*
 *.pem
 
 # Firebase service account key (sensitive - do not commit)
+google-service-account-key.json
 *firebase*service*account*.json
 *-firebase-adminsdk-*.json
+
+# Secrets and local env (never commit real tokens)
+.env
+.env.*
+!.env.example
+
+# Campaign sender logs (may contain token fragments / diagnostics)
+logs/
 
 # local env files
 .env*.local

@@ -28,6 +28,7 @@ import { useThemeAlert } from '@/contexts/ThemeAlertContext';
 import { useEffectiveColorScheme } from '@/contexts/ThemePreferenceContext';
 import { useResponsive } from '@/hooks/use-responsive';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { getZafProductsWithStatus, type ZafProduct } from '@/lib/zaf-products';
 import { syncReminderNotifications } from '@/lib/reminder-notifications';
 import {
     getDailyMeditationTargetMinutes,
@@ -282,6 +283,9 @@ export default function SettingsScreen() {
   const [pickerMinute, setPickerMinute] = useState(0);
   const [reminderNotificationTitle, setReminderNotificationTitleState] = useState('');
   const [reminderNotificationBody, setReminderNotificationBodyState] = useState('');
+  const [zafProducts, setZafProducts] = useState<ZafProduct[]>([]);
+  const [failedProductImageIds, setFailedProductImageIds] = useState<Record<string, boolean>>({});
+  const [showProductsStaleNotice, setShowProductsStaleNotice] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -291,13 +295,16 @@ export default function SettingsScreen() {
       getReminders(),
       getReminderNotificationTitle(),
       getReminderNotificationBody(),
-    ]).then(([days, target, rem, title, body]) => {
+      getZafProductsWithStatus(),
+    ]).then(([days, target, rem, title, body, productsResult]) => {
       if (!cancelled) {
         setGoalDays(days);
         setDailyTargetMinutes(target);
         setRemindersState(rem);
         setReminderNotificationTitleState(title ?? '');
         setReminderNotificationBodyState(body ?? '');
+        setZafProducts(productsResult.products);
+        setShowProductsStaleNotice(productsResult.stale && productsResult.source === 'cache');
         setLoaded(true);
       }
     });
@@ -614,16 +621,33 @@ export default function SettingsScreen() {
 
         {/* ZAF PRODUCTS */}
         <Text style={[styles.productsTitle, { color: textColor }]}>ZAF PRODUCTS</Text>
+        {showProductsStaleNotice ? (
+          <Text style={[styles.sectionHint, { color: textMuted }]}>ネットワーク不安定のため、保存済みデータを表示しています。</Text>
+        ) : null}
         <View style={styles.productsGrid}>
-          {[1, 2, 3, 4].map((i) => (
+          {zafProducts.map((product) => (
             <Pressable
-              key={i}
+              key={product.id}
               style={({ pressed }) => [styles.productCard, { backgroundColor: surfaceColor }, pressed && { opacity: 0.9 }]}
-              onPress={() => router.push(`/zaf-product?id=${i}`)}>
+              onPress={() =>
+                router.push(
+                  `/zaf-product?id=${encodeURIComponent(product.id)}&title=${encodeURIComponent(product.title)}&description=${encodeURIComponent(product.description)}&imageUrl=${encodeURIComponent(product.imageUrl ?? '')}`,
+                )
+              }>
               <Image
-                source={require('@/assets/images/01.png')}
+                source={
+                  product.imageUrl && !failedProductImageIds[product.id]
+                    ? { uri: product.imageUrl }
+                    : require('@/assets/images/01.png')
+                }
                 style={styles.productImage}
                 resizeMode="cover"
+                onError={() =>
+                  setFailedProductImageIds((prev) => {
+                    if (prev[product.id]) return prev;
+                    return { ...prev, [product.id]: true };
+                  })
+                }
               />
             </Pressable>
           ))}
