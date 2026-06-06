@@ -1,34 +1,42 @@
 # Scheduling campaign sending on Windows
 
-The command `npm run send-campaigns` should run on a trusted PC or server that has Node.js, this repo, and credentials configured (see `manual.md` and `.env.example`).
+`npm run send-campaigns` は、Node.js・本リポジトリ・認証情報が設定された信頼できる PC またはサーバーで実行してください（`manual.md` と `.env.example` 参照）。
 
 ## 1. One-off run with a log file (PowerShell)
 
-From the project folder (`odza`):
+プロジェクトフォルダ（`odza`）で:
 
 ```powershell
 $env:CAMPAIGN_LOG_FILE = "logs\campaign-run.log"
 npm run send-campaigns
 ```
 
-Create the `logs` folder once if needed; the script will create it when writing the log.
+`logs` フォルダがなくても、スクリプトが書き込み時に作成します。
+
+または:
+
+```powershell
+npm run send-campaigns:log
+```
+
+（既定で `logs/campaign-run.log` に追記）
 
 ## 2. Task Scheduler (run every N minutes)
 
-1. Open **Task Scheduler** → **Create Task** (not “Create Basic Task” if you need full options).
-2. **General:** Name e.g. `Odza send campaigns`. Choose “Run whether user is logged on or not” if the machine stays on unattended (store the account password when prompted).
-3. **Triggers:** New → **Daily** or **On a schedule** → repeat task every **5 minutes** (or 15), for a duration of **Indefinitely** (adjust to your policy).
-4. **Actions:** New → **Start a program**
-   - **Program/script:** full path to `npm.cmd`  
-     Example: `C:\Program Files\nodejs\npm.cmd`
-   - **Add arguments:** `run send-campaigns`
-   - **Start in:** your repo root, e.g. `D:\projects\odza`
-5. **Conditions / Settings:** Uncheck “Start only if on AC power” if this is a laptop you want to run on battery; enable “Run task as soon as possible after a scheduled start is missed” if you want catch-up after sleep.
-6. **Environment variables:** Task Scheduler does not load your user `.env` automatically. Either:
-   - set system/user environment variables (`EXPO_ACCESS_TOKEN`, `GOOGLE_APPLICATION_CREDENTIALS`, optional `CAMPAIGN_LOG_FILE`), or  
-   - use a wrapper `.cmd` that sets variables then calls `npm run send-campaigns`.
+1. **タスクスケジューラ** を開く → **タスクの作成**（詳細オプションが必要なら「基本タスクの作成」ではなくこちら）。
+2. **全般:** 名前例 `Odza send campaigns`。常時稼働 PC なら「ユーザーがログオンしているかどうかにかかわらず実行」を選択（パスワード入力を求められる場合あり）。
+3. **トリガー:** 新規 → **毎日** またはスケジュール → **5分**（または15分）ごとに繰り返し、期間 **無期限**。
+4. **操作:** 新規 → **プログラムの開始**
+   - **プログラム/スクリプト:** `npm.cmd` のフルパス  
+     例: `C:\Program Files\nodejs\npm.cmd`
+   - **引数の追加:** `run send-campaigns`
+   - **開始:** リポジトリルート、例: `D:\projects\odza`
+5. **条件 / 設定:** ノート PC でバッテリー駆動時も動かすなら「AC 電源時のみ」をオフ。スリープ後の取りこぼしを減らすなら「スケジュールされた開始時刻を逃した場合、できるだけ早くタスクを開始する」をオン。
+6. **環境変数:** タスクスケジューラはユーザーの `.env` を自動読み込みしません。次のいずれか:
+   - システム / ユーザー環境変数に `EXPO_ACCESS_TOKEN`、`GOOGLE_APPLICATION_CREDENTIALS`、任意で `CAMPAIGN_LOG_FILE` を設定  
+   - 環境変数を設定してから `npm run send-campaigns` を呼ぶ **ラッパー `.cmd`** を使う
 
-Example wrapper `scripts\run-campaigns-task.cmd` (edit paths and secrets **locally**, do not commit secrets):
+ラッパー例 `scripts\run-campaigns-task.cmd`（パスと秘密は**ローカルで**編集。**Git にコミットしない**）:
 
 ```bat
 @echo off
@@ -39,14 +47,14 @@ cd /d D:\projects\odza
 call npm run send-campaigns
 ```
 
-Point the scheduled task at `run-campaigns-task.cmd` instead of `npm.cmd`.
+スケジュールタスクの実行ファイルを `npm.cmd` ではなく `run-campaigns-task.cmd` に指定。
 
 ## 3. Failure monitoring
 
-- Inspect `logs\campaign-run.log` (if `CAMPAIGN_LOG_FILE` is set) for `[ERROR]` lines.
-- In Firestore, open the `campaigns` document: check `deliveryOutcome`, `receiptPendingCount`, and `status`.
-- Exit code: the script sets exit code `1` on fatal errors; you can use Task Scheduler “If task fails, restart” or external monitoring if needed.
+- `CAMPAIGN_LOG_FILE` 設定時は `logs\campaign-run.log` の `[ERROR]` 行を確認。
+- Firestore の `campaigns` ドキュメントで `deliveryOutcome`、`receiptPendingCount`、`status` を確認。
+- 致命的エラー時スクリプトは終了コード `1`。タスクスケジューラの「失敗時に再起動」や外部監視も検討。
 
 ## 4. Expo note on receipts
 
-Expo’s docs recommend checking receipts **up to ~15 minutes** after send. The default script waits about **2 minutes** (`EXPO_RECEIPT_MAX_WAIT_MS=120000`). For stricter receipt completion on a schedule, either increase that env var for a dedicated long-running task, or run a second pass later (same command is safe: it only processes `pending` campaigns).
+Expo のドキュメントでは、送信後 **最大約15分** までレシート確認を推奨しています。本スクリプトの既定待ち時間は約 **2分**（`EXPO_RECEIPT_MAX_WAIT_MS=120000`）。より厳密にレシートを待つ場合は環境変数を延長するか、時間を空けて同コマンドを再実行（処理対象は `pending` のキャンペーンのみ）。

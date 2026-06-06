@@ -549,7 +549,8 @@ npm run send-campaigns:log
 | ファイル | 内容 |
 |----------|------|
 | `README.md` | プロジェクトの起動方法、Android/iOS ビルド、プッシュの仕組み、ビジネスロジック（開発者向け・日本語） |
-| `docs/push-notifications.md` | プッシュ通知の実装詳細・送信例（英語） |
+| `docs/handoff/00-INDEX.md` | **引き継ぎ一式の索引**（クライアント・第三者向けチェックリスト） |
+| `docs/client-handoff-onepager.md` | 引き継ぎ1枚サマリ（日本語） |
 | `docs/campaign-scheduling-windows.md` | Windows でのログ付き実行・タスクスケジューラ設定 |
 | `docs/firestore.rules.production.example` | 本番向け Firestore セキュリティルールの雛形 |
 | `.env.example` | 送信スクリプト用の環境変数テンプレート（秘密は書かない） |

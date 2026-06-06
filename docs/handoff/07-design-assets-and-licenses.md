@@ -2,44 +2,43 @@
 
 ## 7.1 In-repository assets
 
-| Location | Contents |
-|----------|----------|
-| `assets/images/` | App icons, product placeholders (e.g. `01.png`), design images |
-| `assets/images/design1.png` | App icon / adaptive icon (referenced in `app.json`) |
-| `assets/screenshots/` | Screenshot captures for `manual.md` |
-| `assets/home-padding-mockup.html` | Internal layout mockup (dev reference) |
+| 場所 | 内容 |
+|------|------|
+| `assets/images/` | アプリアイコン、商品プレースホルダ（例: `01.png`）、デザイン画像 |
+| `assets/images/design1.png` | `app.json` で参照するアイコン / adaptive icon |
+| `assets/screenshots/` | `manual.md` 用スクリーンショット |
+| `assets/home-padding-mockup.html` | レイアウト検討用（開発参考） |
 
 ## 7.2 Sample / operational data
 
-| File | Purpose |
-|------|---------|
-| `scripts/quotes.sample.csv` | 100 sample quotes for import testing |
-| `scripts/quotes.sample.json` | JSON format example |
-| `scripts/zaf-products.sample.csv` | Sample products |
-| `scripts/zaf-products.sample.json` | JSON format example |
+| ファイル | 用途 |
+|----------|------|
+| `scripts/quotes.sample.csv` | インポートテスト用名言（100件） |
+| `scripts/quotes.sample.json` | JSON 形式例 |
+| `scripts/zaf-products.sample.csv` | 商品サンプル |
+| `scripts/zaf-products.sample.json` | JSON 形式例 |
 
-Production content lives in **Firestore** (`quotes`, `zaf_products`), not only in repo samples.
+本番コンテンツの多くは **Firestore**（`quotes`、`zaf_products`）にあり、サンプル CSV のみではありません。
 
 ## 7.3 External assets
 
-- **Product images in app:** loaded from Firestore field `imageUrl` (HTTPS).  
-  License and hosting are **client responsibility** for URLs they configure.
-- **Fonts / Expo modules:** subject to respective open-source licenses (see `package-lock.json` / npm).
+- **商品画像:** Firestore の `imageUrl`（HTTPS）。ホスティングとライセンスは **URL を設定する側**の責任。
+- **フォント / Expo モジュール:** 各 OSS ライセンスに従う（`package-lock.json` 参照）。
 
 ## 7.4 License attention (typical mobile app stack)
 
-| Component | License note |
-|-----------|--------------|
-| React Native / Expo | MIT (Expo SDK) |
-| Firebase SDK | Google terms of service |
-| Third-party npm packages | See `package.json` / `node_modules` |
-| Client-provided brand images | Confirm client owns or has license for meditation product photos, logos, copy |
+| コンポーネント | 備考 |
+|---------------|------|
+| React Native / Expo | MIT 等 |
+| Firebase SDK | Google 利用規約 |
+| npm パッケージ | 各 `package.json` / `node_modules` |
+| クライアント提供のブランド画像 | 商用利用権の確認が必要 |
 
 ## 7.5 What to confirm with client
 
-- [ ] Who owns copyright for **design1.png** and in-app images?
-- [ ] Are **quote texts** licensed for app use?
-- [ ] Are **ZAF product photos** and descriptions client-owned?
-- [ ] Any **stock photo** or **font** requiring attribution? (document if yes)
+- [ ] **design1.png** およびアプリ内画像の著作権者
+- [ ] **名言テキスト**の利用許諾
+- [ ] **ZAF 商品写真・説明文**の権利
+- [ ] ストックフォoto / フォントの **表示義務**（該当する場合）
 
-If unknown, state: *“Assets in repo were provided for this project; client should verify commercial use rights before public store release.”*
+不明な場合: *「リポジトリ内素材は本プロジェクト用に提供されたもの。ストア公開前にクライアント側で商用利用権を確認すること。」*
