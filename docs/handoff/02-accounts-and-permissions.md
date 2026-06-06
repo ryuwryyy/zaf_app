@@ -1,100 +1,98 @@
 # 2. Accounts and permissions
 
-Fill in **Owner account** and **transfer status** when completing handover. Do not paste passwords or private keys in this document.
+**Owner アカウント**と**移管状況**は引き渡し時に記入してください。パスワードや秘密鍵はこの文書に書かないでください。
 
 ---
 
 ## 2.1 Firebase / Google Cloud
 
-| Item | Value |
-|------|--------|
-| **Firebase project ID** | `odza-1af37` |
-| **Console URL** | https://console.firebase.google.com/project/odza-1af37 |
-| **GCP IAM URL** | https://console.cloud.google.com/iam-admin/iam?project=odza-1af37 |
-| **Billing plan (at handover)** | Spark (free) — confirm in Console |
-| **Registered apps** | Android `com.odza.app`, Web `odza-web` |
+| 項目 | 値 |
+|------|-----|
+| **Firebase プロジェクト ID** | `odza-1af37` |
+| **Firebase Console** | https://console.firebase.google.com/project/odza-1af37 |
+| **GCP IAM** | https://console.cloud.google.com/iam-admin/iam?project=odza-1af37 |
+| **料金プラン（引き渡し時）** | Spark（無料）— Console で要確認 |
+| **登録アプリ** | Android `com.odza.app`、Web `odza-web` |
 
-### Firestore (primary database)
+### Firestore（メインデータベース）
 
 https://console.firebase.google.com/project/odza-1af37/firestore
 
 ### Firebase Storage
 
-**Not used by the app code at handover.** Product images use **external URLs** (`imageUrl` in Firestore), not Firebase Storage uploads.
+**アプリコードでは未使用。** 商品画像は Firestore の **`imageUrl`**（外部 HTTPS URL）を使用。
 
 ### Service account (Admin SDK — for scripts)
 
-- Used by: `scripts/send-pending-campaigns.mjs`, `import-quotes.mjs`, `import-zaf-products.mjs`
-- **Not** the same as `google-services.json` (client Android config)
-- Create/download: GCP → IAM → Service Accounts → Keys  
-- Deliver to client **outside Git** (rotate if ever committed or pushed)
+- 使用箇所: `scripts/send-pending-campaigns.mjs`、`import-quotes.mjs`、`import-zaf-products.mjs`
+- **`google-services.json`（Android 用）とは別物**
+- 作成: GCP → IAM → サービスアカウント → 鍵  
+- **Git 以外**の安全な経路でクライアントへ渡す（漏洩歴がある場合はローテーション）
 
 ### Client emails requested as Owner (confirm all added)
 
-| Email | Role | Status (you fill) |
-|-------|------|-------------------|
-| info@zaf-zen.jp | Owner | ☐ Pending / ☐ Active |
-| ryuwryyy@gmail.com | Owner | ☐ Pending / ☐ Active |
-| kgt.system.info@gmail.com | Owner | ☐ Pending / ☐ Active |
+| メール | ロール | 状態（記入） |
+|--------|--------|-------------|
+| info@zaf-zen.jp | Owner | ☐ 招待中 / ☐ 有効 |
+| ryuwryyy@gmail.com | Owner | ☐ 招待中 / ☐ 有効 |
+| kgt.system.info@gmail.com | Owner | ☐ 招待中 / ☐ 有効 |
 
-**How to add:** Firebase → Project settings (gear) → **Users and permissions** → Add member → **Owner**.  
-Verify in GCP IAM if needed.
+**追加手順:** Firebase → 歯車 **プロジェクトの設定** → **ユーザーと権限** → メンバーを追加 → **Owner**  
+必要に応じて GCP IAM でも確認。
 
 ---
 
 ## 2.2 Expo / EAS
 
-| Item | Value |
-|------|--------|
+| 項目 | 値 |
+|------|-----|
 | **Expo slug** | `odza` |
-| **EAS project ID** | `f75f4243-74a5-4f6c-a105-cea0c7eb5a2b` (in `app.json`) |
-| **Dashboard** | https://expo.dev (account: **fill owner username**, e.g. `trong198`) |
-| **Build profiles** | `development`, `preview`, `production` (`eas.json`) |
+| **EAS プロジェクト ID** | `f75f4243-74a5-4f6c-a105-cea0c7eb5a2b`（`app.json` にも記載） |
+| **ダッシュボード** | https://expo.dev → プロジェクト **odza** |
+| **ビルドプロファイル** | `development`、`preview`、`production`（`eas.json`） |
 
 ### What you must do
 
-1. Add client users to the **Expo organization/project** with appropriate role, **or** document how to transfer project ownership (Expo support / org settings).
-2. Ensure **EAS credentials** (Android keystore, etc.) are visible to the client in Expo → Project → **Credentials**.
-3. Provide **`EXPO_ACCESS_TOKEN`** securely (Expo account → Access tokens) for campaign sending scripts.
+1. クライアントを Expo **組織 / プロジェクトのメンバー**に追加する、または移管手順を文書化。
+2. **EAS 認証情報**（Android キーストア等）がクライアントから Expo → プロジェクト → **Credentials** で見えること。
+3. **`EXPO_ACCESS_TOKEN`** を安全な経路で共有（またはクライアント自身が Expo で新規発行）。
 
 ### Push notifications
 
-- Tokens obtained via `expo-notifications` + EAS `projectId`
-- Sending: Expo Push API (`scripts/send-pending-campaigns.mjs`)
-- Details: `docs/push-notifications.md`
+- トークン取得: `expo-notifications` + EAS `projectId`
+- 送信: Expo Push API（`scripts/send-pending-campaigns.mjs`）
+- 詳細: `docs/push-notifications.md`（技術メモ・英語）
 
 ---
 
 ## 2.3 Domain / DNS / Hosting
 
-| Service | Used? | Notes |
-|---------|-------|-------|
-| Custom domain for app | **No** | Mobile app only |
-| Web hosting for production app | **No** | `expo web` is dev/static only unless separately deployed |
-| Firebase Hosting | **Not configured** in this repo |
-| App distribution | **EAS Build** + optional Google Play (production AAB) |
-
-If the client expected a marketing website or custom API domain, note that as **out of current scope** (see gaps doc).
+| サービス | 利用 | 備考 |
+|----------|------|------|
+| アプリ用カスタムドメイン | **なし** | モバイルアプリのみ |
+| 本番 Web ホスティング | **なし** | `expo web` は開発用 |
+| Firebase Hosting | **未設定** |
+| アプリ配布 | **EAS Build** + 任意で Google Play |
 
 ---
 
 ## 2.4 Other external services
 
-| Service | Purpose |
-|---------|---------|
-| **GitHub** | Source repository |
-| **Expo** | Builds, push infrastructure |
-| **Firebase** | Firestore, Android `google-services.json` |
-| **Google Play Console** | Only if/when production AAB is submitted (client-owned account) |
-| **Apple Developer** | Only if/when iOS production build is submitted |
+| サービス | 用途 |
+|----------|------|
+| **GitHub** | ソースリポジトリ |
+| **Expo** | ビルド、プッシュ基盤 |
+| **Firebase** | Firestore、`google-services.json` |
+| **Google Play Console** | production AAB 提出時（クライアント側アカウント） |
+| **Apple Developer** | iOS 本番ビルド提出時 |
 
 ---
 
 ## 2.5 Handover checklist (permissions)
 
-- [ ] Client can log into Firebase `odza-1af37`
-- [ ] Client can view Firestore collections
-- [ ] Client has Expo access to project `odza`
-- [ ] Client has GitHub access to `zaf_app` (or received Zip)
-- [ ] Client received service account JSON + Expo token via secure channel
-- [ ] Old leaked keys rotated (if applicable)
+- [ ] クライアントが Firebase `odza-1af37` にログインできる  
+- [ ] Firestore コレクションが閲覧できる  
+- [ ] クライアントが Expo プロジェクト **odza** にアクセスできる  
+- [ ] GitHub `zaf_app` にアクセスできる（または Zip 受領済み）  
+- [ ] サービスアカウント JSON と Expo トークンを安全に受け渡した  
+- [ ] 漏洩した可能性のある鍵をローテーションした  

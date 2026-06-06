@@ -2,39 +2,39 @@
 
 ## 3.1 Prerequisites
 
-| Tool | Version / note |
-|------|----------------|
-| Node.js | 18 or 20 LTS recommended |
-| npm | Comes with Node |
-| EAS CLI | `npm install -g eas-cli` (for cloud builds only) |
-| Expo account | Required for EAS builds |
+| ツール | バージョン / 備考 |
+|--------|-------------------|
+| Node.js | 18 または 20 LTS 推奨 |
+| npm | Node に同梱 |
+| EAS CLI | `npm install -g eas-cli`（クラウドビルド時） |
+| Expo アカウント | EAS ビルドに必須 |
 
 ---
 
 ## 3.2 Environment variables
 
-**Template (committed):** `.env.example`  
-**Local secrets (never commit):** copy to `.env` in project root.
+**テンプレート（リポジトリ同梱）:** `.env.example`  
+**ローカル秘密（コミット禁止）:** プロジェクトルートに `.env` を作成
 
-| Variable | Required for | Description |
-|----------|--------------|-------------|
-| `EXPO_ACCESS_TOKEN` | Campaign send (recommended) | Expo access token |
-| `GOOGLE_APPLICATION_CREDENTIALS` | Scripts → Firestore Admin | Full path to service account JSON |
-| `FIREBASE_SERVICE_ACCOUNT_JSON` | CI alternative | Raw JSON string (optional) |
-| `CAMPAIGN_LOG_FILE` | Optional | e.g. `logs/campaign-run.log` |
-| `EXPO_RECEIPT_POLL_INTERVAL_MS` | Optional | Default `4000` |
-| `EXPO_RECEIPT_MAX_WAIT_MS` | Optional | Default `120000` |
+| 変数名 | 必須 | 説明 |
+|--------|------|------|
+| `EXPO_ACCESS_TOKEN` | 推奨 | Expo アクセストークン |
+| `GOOGLE_APPLICATION_CREDENTIALS` | スクリプト実行時 | サービスアカウント JSON の**フルパス** |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | 任意（CI） | JSON 文字列 |
+| `CAMPAIGN_LOG_FILE` | 任意 | 例: `logs/campaign-run.log` |
+| `EXPO_RECEIPT_POLL_INTERVAL_MS` | 任意 | 既定 `4000` |
+| `EXPO_RECEIPT_MAX_WAIT_MS` | 任意 | 既定 `120000` |
 
-**Campaign script loads `.env` automatically** when you run `npm run send-campaigns`.
+**`npm run send-campaigns` は `.env` を自動読み込み**します。
 
-Example `.env` (client fills real values):
+`.env` の例:
 
 ```env
-EXPO_ACCESS_TOKEN=your_token_here
+EXPO_ACCESS_TOKEN=ここにトークン
 GOOGLE_APPLICATION_CREDENTIALS=D:\secure\path\service-account.json
 ```
 
-Place service account file **outside** the repo when possible.
+サービスアカウント JSON は**リポジトリ外**に置くことを推奨。
 
 ---
 
@@ -46,30 +46,30 @@ npm install
 npm start
 ```
 
-- Press `a` (Android emulator), `i` (iOS simulator), or scan QR with **development build** (not Expo Go for full push/reminders on Android).
-- See `README.md` section 1 for details.
+- `a`（Android）などで起動。**プッシュ・リマインダーの完全検証は開発ビルド**を使用（Android の Expo Go は制限あり）。
+- 詳細: `README.md` 第1章
 
 ---
 
 ## 3.4 Build procedure (EAS)
 
-Login once:
+初回ログイン:
 
 ```powershell
 eas login
 ```
 
-| Profile | Use case | Command |
-|---------|----------|---------|
-| **development** | Dev client, push testing | `eas build --profile development --platform android` |
-| **preview** | Internal APK | `eas build --profile preview --platform android` |
-| **production** | Play Store (AAB) | `eas build --profile production --platform android` |
+| プロファイル | 用途 | コマンド |
+|-------------|------|----------|
+| **development** | 開発クライアント、プッシュ検証 | `eas build --profile development --platform android` |
+| **preview** | 社内配布用 APK | `eas build --profile preview --platform android` |
+| **production** | Google Play 用 AAB | `eas build --profile production --platform android` |
 
-iOS: same profiles with `--platform ios`.
+iOS は `--platform ios` に変更。
 
-Download artifacts from the build URL in the terminal or https://expo.dev → project **odza** → **Builds**.
+成果物はターミナルの URL または https://expo.dev → **odza** → **Builds** からダウンロード。
 
-**Optional:** For guaranteed APK on preview, add to `eas.json` under `preview`:
+**APK を確実に欲しい場合:** `eas.json` の `preview` に以下を追加:
 
 ```json
 "android": { "buildType": "apk" }
@@ -82,36 +82,35 @@ Download artifacts from the build URL in the terminal or https://expo.dev → pr
 ### Mobile app (Google Play)
 
 1. `eas build --profile production --platform android`
-2. Download **AAB** from Expo dashboard
-3. Upload to **Google Play Console** (client account)
-4. Complete store listing, testing track, release
+2. **AAB** をダウンロード
+3. **Google Play Console**（クライアントアカウント）へアップロード
 
-### Mobile app (iOS App Store)
+### Mobile app (App Store)
 
 1. `eas build --profile production --platform ios`
-2. Submit via EAS Submit or App Store Connect (Apple Developer account required)
+2. EAS Submit または App Store Connect（Apple Developer 必須）
 
-### Content updates (no app rebuild)
+### Content updates (no app rebuild required)
 
-These do **not** require a new store build if only data changes:
+Firestore の `quotes` / `zaf_products` / `campaigns` の更新、または:
 
-- Firestore `quotes`, `zaf_products`, `campaigns`
-- Commands: `npm run import-quotes`, `npm run import-zaf-products`, `npm run send-campaigns`
+- `npm run import-quotes`
+- `npm run import-zaf-products`
+- `npm run send-campaigns`
 
 ### Backend / campaigns
 
-There is **no** deployed Cloud Function. Campaign sending is a **local/scheduled script**:
+**Cloud Functions は未使用。** PC 上（またはタスクスケジューラ）でスクリプト実行:
 
-- `npm run send-campaigns` or `npm run send-campaigns:log`
-- Scheduling: `docs/campaign-scheduling-windows.md` (Windows Task Scheduler)
+- `docs/campaign-scheduling-windows.md`
 
 ---
 
 ## 3.6 Firebase client config (in repo)
 
-| File | Purpose |
-|------|---------|
-| `lib/firebase.ts` | Web SDK config (projectId `odza-1af37`) |
-| `google-services.json` | Android Firebase client config |
+| ファイル | 用途 |
+|----------|------|
+| `lib/firebase.ts` | Web SDK 設定（projectId `odza-1af37`） |
+| `google-services.json` | Android 用 Firebase 設定 |
 
-These are **public client** identifiers, not Admin secrets.
+これらは**クライアント用公開設定**であり、Admin 秘密鍵ではありません。

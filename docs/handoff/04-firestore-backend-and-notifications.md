@@ -3,18 +3,18 @@
 ## 4.1 Architecture overview
 
 ```
-Mobile app (Expo)
-  ├─ reads: quotes, zaf_products (Firestore)
-  ├─ writes: push_tokens (Firestore, merge upsert)
-  └─ local: reminders (AsyncStorage, not Firestore)
+モバイルアプリ（Expo）
+  ├─ 読取: quotes, zaf_products（Firestore）
+  ├─ 書込: push_tokens（Firestore、merge upsert）
+  └─ 端末内: リマインダー（AsyncStorage、Firestore 外）
 
-PC / server (Node scripts + Firebase Admin SDK)
+PC / サーバー（Node スクリプト + Firebase Admin SDK）
   ├─ import-quotes.mjs → quotes
   ├─ import-zaf-products.mjs → zaf_products
-  └─ send-pending-campaigns.mjs → reads campaigns + push_tokens → Expo Push API
+  └─ send-pending-campaigns.mjs → campaigns + push_tokens → Expo Push API
 ```
 
-**No Cloud Functions** are deployed in this project at handover.
+**Cloud Functions はデプロイしていません**（引き渡し時点）。
 
 ---
 
@@ -22,101 +22,100 @@ PC / server (Node scripts + Firebase Admin SDK)
 
 ### `quotes`
 
-| Field | Type | Notes |
-|-------|------|-------|
-| `text` | string | Required |
-| `author` | string | Optional |
-| `profession` | string | Optional (attribution) |
-| `enabled` | boolean | Default true; false hides |
+| フィールド | 型 | 備考 |
+|-----------|-----|------|
+| `text` | string | 必須 |
+| `author` | string | 任意 |
+| `profession` | string | 任意（出典表示） |
+| `enabled` | boolean | false で非表示 |
 
-**App behavior:** Home screen “今日の気づき”; rotates every **15 minutes**; cached locally.  
-**Import:** `npm run import-quotes -- --file path/to.csv` (`--merge` to upsert)
+**アプリ:** ホーム「今日の気づき」、約 **15分** ごとに切替。端末にキャッシュ。  
+**登録:** `npm run import-quotes -- --file ファイル.csv`（`--merge` で追記）
 
-CSV columns: `id,text,author,profession,enabled`  
-Sample: `scripts/quotes.sample.csv`
+CSV 列: `id,text,author,profession,enabled`  
+サンプル: `scripts/quotes.sample.csv`
 
 ---
 
 ### `zaf_products`
 
-| Field | Type | Notes |
-|-------|------|-------|
-| `title` | string | Required |
-| `description` | string | Required |
-| `imageUrl` | string | Optional; public HTTPS URL |
-| `enabled` | boolean | Default true |
-| `sortOrder` | number | Optional sort |
+| フィールド | 型 | 備考 |
+|-----------|-----|------|
+| `title` | string | 必須 |
+| `description` | string | 必須 |
+| `imageUrl` | string | 任意、公開 HTTPS |
+| `enabled` | boolean | 既定 true |
+| `sortOrder` | number | 表示順 |
 
-**App behavior:** Settings grid + product detail; AsyncStorage cache.  
-**Import:** `npm run import-zaf-products -- --file path/to.csv`
+**アプリ:** 設定画面グリッド + 商品詳細。AsyncStorage キャッシュあり。  
+**登録:** `npm run import-zaf-products -- --file ファイル.csv`
 
-CSV columns: `id,title,description,imageUrl,enabled,sortOrder`  
-Sample: `scripts/zaf-products.sample.csv`
+CSV 列: `id,title,description,imageUrl,enabled,sortOrder`  
+サンプル: `scripts/zaf-products.sample.csv`
 
 ---
 
 ### `push_tokens`
 
-| Field | Type | Notes |
-|-------|------|-------|
-| Document ID | string | Same as Expo push token string |
+| フィールド | 型 | 備考 |
+|-----------|-----|------|
+| ドキュメント ID | string | Expo トークン文字列と同一 |
 | `token` | string | Expo push token |
 | `platform` | string | `ios` / `android` |
-| `appVersion` | string | From app config |
-| `updatedAt` | timestamp | Server timestamp on upsert |
+| `appVersion` | string | アプリバージョン |
+| `updatedAt` | timestamp | upsert 時 |
 
-**Written by app:** `lib/push-notifications.ts`  
-**Deleted by script:** invalid tokens (`DeviceNotRegistered`)
+**書込:** アプリ `lib/push-notifications.ts`  
+**削除:** 送信スクリプト（無効トークン `DeviceNotRegistered` 時）
 
 ---
 
 ### `campaigns`
 
-**Create manually in Firebase Console** (or Admin script), then send via `npm run send-campaigns`.
+Console で作成 → `npm run send-campaigns` で送信。
 
-| Field | When set | Notes |
-|-------|----------|-------|
-| `title` | You create | Notification title |
-| `body` | You create | Notification body |
-| `status` | You create → script updates | Start with `"pending"` |
-| `scheduledAt` | Optional | Timestamp; send only when due |
-| `data` | Optional | JSON object for app deep link data |
-| `sentAt`, `sentCount`, `errorCount`, … | Script | After send |
-| `receiptOkCount`, `receiptErrorCount`, `receiptPendingCount` | Script | Expo receipt polling |
-| `deliveryOutcome` | Script | `delivered`, `partially_delivered`, `failed`, `receipts_pending`, etc. |
+| フィールド | タイミング | 備考 |
+|-----------|-----------|------|
+| `title` | 作成時 | 通知タイトル |
+| `body` | 作成時 | 本文 |
+| `status` | 作成時 → スクリプト更新 | 開始は `"pending"` |
+| `scheduledAt` | 任意 | タイムスタンプ、時刻前は送信しない |
+| `data` | 任意 | アプリ用 JSON |
+| `sentAt`, `sentCount`, `errorCount` 等 | 送信後 | スクリプトが更新 |
+| `receiptOkCount`, `deliveryOutcome` 等 | 送信後 | Expo レシート確認結果 |
 
 ---
 
 ## 4.3 Security rules
 
-**Example (production-oriented):** `docs/firestore.rules.production.example`
+**雛形:** `docs/firestore.rules.production.example`
 
-Summary:
+Firebase Console → Firestore → **ルール** に貼り付けて公開（本番前に要確認）。
 
-- `quotes`, `zaf_products`: public **read**, no client **write**
-- `push_tokens`: client **create/update** own token doc only
-- `campaigns`: no client access (Admin / Console only)
+概要:
 
-**Action:** Paste into Firebase Console → Firestore → **Rules** and publish (verify against current rules in Console).
+- `quotes`, `zaf_products`: **読取のみ**（クライアントからの書込不可）
+- `push_tokens`: 端末が自分のトークン doc のみ create/update
+- `campaigns`: クライアントからアクセス不可（Console / Admin のみ）
 
 ---
 
 ## 4.4 Firebase Storage
 
-**Not used** by application code. Images are external URLs in `zaf_products.imageUrl`.
+**未使用。** 画像は Firestore の `imageUrl`（外部 URL）。
 
 ---
 
 ## 4.5 Scripts reference
 
-| Script | Command | Credentials |
-|--------|---------|-------------|
-| Send campaigns | `npm run send-campaigns` | `.env` + service account |
-| Send with log | `npm run send-campaigns:log` | Same |
-| Import quotes | `npm run import-quotes -- --file FILE [--merge]` | Service account JSON path |
-| Import products | `npm run import-zaf-products -- --file FILE [--merge]` | Same |
+| スクリプト | コマンド | 認証 |
+|-----------|----------|------|
+| キャンペーン送信 | `npm run send-campaigns` | `.env` + サービスアカウント |
+| ログ付き送信 | `npm run send-campaigns:log` | 同上 |
+| 名言インポート | `npm run import-quotes -- --file FILE [--merge]` | サービスアカウント |
+| 商品インポート | `npm run import-zaf-products -- --file FILE [--merge]` | 同上 |
 
-Default service account path if env unset: `./google-service-account-key.json` (local only, gitignored).
+環境変数未設定時の既定パス: `./google-service-account-key.json`（ローカルのみ、gitignore）
 
 ---
 
@@ -124,41 +123,38 @@ Default service account path if env unset: `./google-service-account-key.json` (
 
 ### A. Remote campaigns (Firestore + Expo Push)
 
-1. User opens **development/production build** (not Expo Go on Android for reliable push).
-2. App registers Expo push token → upserts `push_tokens`.
-3. Operator creates `campaigns` doc with `status: "pending"`.
-4. Operator runs `npm run send-campaigns`:
-   - Queries pending due campaigns
-   - Sends batches to `https://exp.host/--/api/v2/push/send`
-   - Polls `getReceipts` for delivery metrics
-   - Updates campaign doc; removes dead tokens
+1. ユーザーが **開発ビルド / 本番ビルド** でアプリ起動（Android Expo Go は非推奨）。
+2. Expo トークン取得 → **`push_tokens`** に保存。
+3. 運用担当が **`campaigns`** に `status: "pending"` で作成。
+4. `npm run send-campaigns` 実行:
+   - pending かつ期限到来分を Expo API へ送信
+   - **getReceipts** で配信結果をポーリング
+   - キャンペーン doc 更新、無効トークン削除
 
-See: `docs/push-notifications.md`, `manual.md` section 5, `docs/campaign-scheduling-windows.md`
+参照: `manual.md` 第5章、`docs/campaign-scheduling-windows.md`
 
 ### B. Local reminders (on-device)
 
-- Configured in app Settings; stored in **AsyncStorage**
-- **Not** stored in Firestore
-- Uses `expo-notifications` scheduled locally
+- 設定画面で時刻・ON/OFF・文言を **端末内（AsyncStorage）** に保存
+- **Firestore には保存しない**
+- `expo-notifications` で端末ローカルスケジュール
 
 ---
 
 ## 4.7 Scheduled execution
 
-**Not pre-configured on client machines.** Options documented in:
+**クラウドでは未設定。** Windows タスクスケジューラ等:
 
-- `docs/campaign-scheduling-windows.md` (Windows Task Scheduler + wrapper `.cmd` pattern)
-
-Recommended: run every 5–15 minutes if scheduled campaigns are used.
+- `docs/campaign-scheduling-windows.md`
 
 ---
 
 ## 4.8 Key source files
 
-| File | Role |
-|------|------|
-| `lib/firebase.ts` | Client Firestore init |
-| `lib/quotes.ts` | Quote fetch + 15-min rotation |
-| `lib/zaf-products.ts` | Products + cache |
-| `lib/push-notifications.ts` | Token + Firestore sync |
-| `scripts/send-pending-campaigns.mjs` | Campaign sender |
+| ファイル | 役割 |
+|----------|------|
+| `lib/firebase.ts` | クライアント Firestore 初期化 |
+| `lib/quotes.ts` | 名言取得・15分ローテーション |
+| `lib/zaf-products.ts` | 商品取得・キャッシュ |
+| `lib/push-notifications.ts` | トークン + Firestore 同期 |
+| `scripts/send-pending-campaigns.mjs` | キャンペーン送信 |
